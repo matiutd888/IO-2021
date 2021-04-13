@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="content-section">
+        <h1 class="account-heading">
+            Hello, {{ user.username }}!
+        </h1>
+    <h3 class="article-title">
+            Here are your boards...
+        </h3>
+    <div class="content-section d-flex flex-wrap border-0">
+
+            {% for board in all_user_boards %}
+                <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'placeholder_board.jpg' %}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title"> {{ board.title }} </h5>
+                        <small class="text-muted">{{ board.date_created|date:"F d, Y" }}</small>
+
+                        <a href="{% url 'board-detail' board.pk %}" class="btn btn-outline-primary">Select</a>
+                        <a href="#" class="btn btn-outline-warning">Delete</a>
+                    </div>
+                </div>
+            {% endfor %}
+    </div>
+    </div>
+
+{% endblock content %}

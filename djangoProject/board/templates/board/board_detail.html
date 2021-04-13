@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head_block %}
+    <meta charset="UTF-8"/>
+    <meta name = "viewport" content="width=device=width, initial-scale=1.0"/>
+    <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+    <link rel="stylesheet" href="{% static 'canvas_js/style.css' %}"/>
+    <title>Canvas</title>
+
+{% endblock head_block %}
+
+{% block content %}
+    <div class="content-section">
+    <h1>{{ object.title }}</h1>
+    <button class="btn btn-outline-primary" onclick="toggleMode(modes.move)"> Move objects around </button>
+    <button class="btn btn-outline-primary" onclick="toggleMode(modes.pan)">Toggle Pan</button>
+    <button class="btn btn-outline-primary" onclick="toggleMode(modes.drawing)">Toggle Drawing</button>
+    <button class="btn btn-outline-info" onclick="clearCanvas(canvas, svgState)">Clear</button>
+    <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, svgState, bgUrl)">Restore</button>
+        <br>
+            <label for='colorPicker'>Change color: </label><input id='colorPicker' value="#000000" data-jscolor="">
+        <br>
+        <label for='brushSize'>Change brush size: </label><input type="number" id='brushSize' min="1" max="20" value="1">
+        <canvas id="canvas"></canvas>
+    {% if object.board_string == '' %}
+        <script>
+            var data = '';
+        </script>
+        {% else %}
+        <script>
+            var data = $('<div>').html('{{ object.board_string }}')[0].textContent;
+        </script>
+        {% endif %}
+
+    <div id="bottomButtons">
+        <div class="buttonsWrapper">
+            <p class="buttonsTitle">Objects</p>
+            <div class="buttons">
+                <button class="btn btn-outline-secondary" onclick="createRect(canvas)">Rectangle</button>
+                <button class="btn btn-outline-secondary" onclick="createCirc(canvas)">Circle</button>
+                <button class="btn btn-outline-secondary" onclick="groupObjects(canvas, group, true)">Group</button>
+                <button class="btn btn-outline-secondary" onclick="groupObjects(canvas, group, false)">Ungroup</button>
+            </div>
+
+        </div>
+        <div id="saveButton">
+            <div class="buttonsWrapper">
+                <button class="btn btn-outline-success" id="saveBtn">Save</button>
+            </div>
+        </div>
+
+        <div class="buttonsWrapper">
+            <p class="buttonsTitle">Image</p>
+            <input id="myImg" type="file" accept="image/*">
+        </div>
+    </div>
+    </div>
+
+    <script src="{% static 'canvas_js/fabric.min.js' %}"></script>
+    <script src="{% static 'canvas_js/jscolor.js' %}"></script>
+    <script src="{% static 'canvas_js/canvas.js' %}"></script>
+    <script>
+    document.getElementById("saveBtn").addEventListener('click', saveCanvas);
+    window.onload = loadCanvas();
+    function saveCanvas() {
+        console.log("SAVE_CANVAS_RUN");
+        var json = JSON.stringify(canvas.toJSON());
+        console.log(json);
+        $.post('{% url 'save_canvas' %}', {canvas_ : json, board_id : {{ object.pk }}, csrfmiddlewaretoken: '{{ csrf_token }}'}, function (data){console.log(data)});
+    }
+
+    function loadCanvas() {
+        if (data !== '') {
+            canvas.loadFromJSON(data);
+
+            canvas.renderAll();
+        }
+    }
+    </script>
+{% endblock content %}
