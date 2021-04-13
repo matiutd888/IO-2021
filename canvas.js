@@ -13,13 +13,22 @@ const setBackground = (url, canvas) => {
     })
 }
 
+
+const lockObject = (object, option) => {
+	object.lockMovementX = object.lockMovementY = option;
+	object.hasBorders = object.hasControls = !option;
+}
+
+const lockAllObjects = (option) => {
+	canvas.getObjects().forEach(object => { lockObject(object, option); });
+}
+
 const toggleMode = (mode) => {
     if (mode === modes.pan) {
         if (currentMode === modes.pan) {
             currentMode = ''
         } else {
-	    canvas.getObjects().forEach(object => { object.lockMovementX = object.lockMovementY = object.lockRotation = true;
-							object.hasBorders = object.hasControls = false;});
+	    lockAllObjects(true);
 	    canObjectsMove = false
             currentMode = modes.pan
             canvas.isDrawingMode = false
@@ -40,8 +49,7 @@ const toggleMode = (mode) => {
 	if (currentMode == modes.move) {
 	    currentMode = ''
 	} else {
-	    canvas.getObjects().forEach(object => { object.lockMovementX = object.lockMovementY = object.lockRotation = false;
-							object.hasBorders = object.hasControls = true;});
+	    lockAllObjects(false);
 	    canObjectsMove = true
 	    currentMode = modes.move
 	    canvas.isDrawingMode = false
@@ -87,6 +95,7 @@ const setPanEvents = (canvas) => {
     })
 }
 
+
 const setColorListener = () => {
     const picker = document.getElementById('colorPicker')
     picker.addEventListener('change', (event) => {
@@ -95,6 +104,17 @@ const setColorListener = () => {
         canvas.requestRenderAll()
     })
 }
+
+// Moze jakos inaczej nazwac ten event - nie znam konwencji :/
+const setBrushSizeListener = () => {
+     const brushSize = document.getElementById('brushSize')
+     brushSize.addEventListener('change', (event) => {
+        console.log("setBrushSizeListener" + event.target.value)
+        canvas.freeDrawingBrush.width = parseInt(event.target.value, 10)
+	canvas.requestRenderAll()
+     })
+}
+
 
 const clearCanvas = (canvas, state) => {
     state.val = canvas.toSVG()
@@ -206,11 +226,13 @@ let currentMode;
 
 const modes = {
     pan: 'pan',
-    drawing: 'drawing'
+    drawing: 'drawing',
+    move: 'move'
 }
 const reader = new FileReader()
 
 setColorListener()
+setBrushSizeListener()
 setBackground(bgUrl, canvas)
 setPanEvents(canvas)
 
