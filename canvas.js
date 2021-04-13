@@ -18,6 +18,9 @@ const toggleMode = (mode) => {
         if (currentMode === modes.pan) {
             currentMode = ''
         } else {
+	    canvas.getObjects().forEach(object => { object.lockMovementX = object.lockMovementY = object.lockRotation = true;
+							object.hasBorders = object.hasControls = false;});
+	    canObjectsMove = false
             currentMode = modes.pan
             canvas.isDrawingMode = false
             canvas.renderAll()
@@ -28,11 +31,22 @@ const toggleMode = (mode) => {
             canvas.isDrawingMode = false
             canvas.renderAll()
         } else {
+	    canObjectsMove = false
             currentMode = modes.drawing
-            canvas.freeDrawingBrush.color = color
             canvas.isDrawingMode = true
             canvas.renderAll()
         }      
+    } else if (mode === modes.move) {
+	if (currentMode == modes.move) {
+	    currentMode = ''
+	} else {
+	    canvas.getObjects().forEach(object => { object.lockMovementX = object.lockMovementY = object.lockRotation = false;
+							object.hasBorders = object.hasControls = true;});
+	    canObjectsMove = true
+	    currentMode = modes.move
+	    canvas.isDrawingMode = false
+	    
+	}
     }
 }
 
@@ -60,14 +74,24 @@ const setPanEvents = (canvas) => {
         canvas.setCursor('default')
         canvas.renderAll()
     })
+    // zoom in and out of canvas
+    canvas.on('mouse:wheel', (event) => {
+	var delta = event.e.deltaY;
+	var zoom = canvas.getZoom();
+	zoom *= 0.999 ** delta;
+	if (zoom > 20) zoom = 20;
+	if (zoom < 0.01) zoom = 0.01;
+	canvas.setZoom(zoom);
+	event.e.preventDefault();
+	event.e.stopPropagation();
+    })
 }
 
 const setColorListener = () => {
     const picker = document.getElementById('colorPicker')
     picker.addEventListener('change', (event) => {
-        console.log(event.target.value)
-        color = '#' + event.target.value
-        canvas.freeDrawingBrush.color = color
+        console.log("setColorListener " + event.target.value)
+        canvas.freeDrawingBrush.color = event.target.value
         canvas.requestRenderAll()
     })
 }
