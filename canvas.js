@@ -1,10 +1,24 @@
 const initCanvas = (id) => {
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
     return new fabric.Canvas(id, {
-        width: 500,
-        height: 500,
+        width: w,
+        height: h - 150,
         selection: false
     });
 }
+
+setCanvasSize = () => {
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
+    canvas.setDimensions({
+	width: w,
+	height: h - 150
+    });
+    canvas.renderAll();
+    console.log("Expected width " + w + " Expected height " + h);
+}
+
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
@@ -115,7 +129,6 @@ const setBrushSizeListener = () => {
      })
 }
 
-
 const clearCanvas = (canvas, state) => {
     state.val = canvas.toSVG()
     canvas.getObjects().forEach((o) => {
@@ -215,6 +228,8 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
+
+
 const canvas = initCanvas('canvas')
 const svgState = {}
 let mousePressed = false
@@ -235,6 +250,7 @@ setColorListener()
 setBrushSizeListener()
 setBackground(bgUrl, canvas)
 setPanEvents(canvas)
+window.addEventListener("resize", setCanvasSize);
 
 const inputFile = document.getElementById('myImg');
 inputFile.addEventListener('change', imgAdded)
