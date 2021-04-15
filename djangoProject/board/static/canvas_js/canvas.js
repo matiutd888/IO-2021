@@ -1,10 +1,24 @@
 const initCanvas = (id) => {
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.clientHeight;
     return new fabric.Canvas(id, {
-        width: 500,
-        height: 500,
+        width: w,
+        height: h - 150,
         selection: false
     });
 }
+
+setCanvasSize = () => {
+    var w = document.documentElement.clientWidth;
+    var h = document.documentElement.offsetHeight;
+    canvas.setDimensions({
+	width: w,
+	height: h - 150
+    });
+    canvas.renderAll();
+    console.log("Expected width " + w + " Expected height " + h);
+}
+
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
@@ -86,7 +100,7 @@ const setPanEvents = (canvas) => {
     canvas.on('mouse:wheel', (event) => {
 	var delta = event.e.deltaY;
 	var zoom = canvas.getZoom();
-	zoom *= 0.95 ** delta;
+	zoom *= 0.97 ** delta;
 	if (zoom > 20) zoom = 20;
 	if (zoom < 0.01) zoom = 0.01;
 	canvas.setZoom(zoom);
@@ -114,7 +128,6 @@ const setBrushSizeListener = () => {
 	canvas.requestRenderAll()
      })
 }
-
 
 const clearCanvas = (canvas, state) => {
     state.val = canvas.toSVG()
@@ -215,6 +228,8 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
+
+
 const canvas = initCanvas('canvas')
 const svgState = {}
 let mousePressed = false
@@ -235,6 +250,7 @@ setColorListener()
 setBrushSizeListener()
 setBackground(bgUrl, canvas)
 setPanEvents(canvas)
+window.addEventListener("resize", setCanvasSize);
 
 const inputFile = document.getElementById('myImg');
 inputFile.addEventListener('change', imgAdded)
@@ -245,4 +261,3 @@ reader.addEventListener("load", () => {
         canvas.requestRenderAll()
     })
 })
-

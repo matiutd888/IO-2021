@@ -4,6 +4,13 @@
     box-sizing: border-box;
 }
 
+.canvas_content {
+    width: 95vw;
+    height: 20vh;
+    border-bottom-color: #428bca;
+    border-width: thick;
+}
+
 #canvas {
     width: 100%;
     height: 100%;
