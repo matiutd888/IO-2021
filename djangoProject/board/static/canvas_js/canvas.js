@@ -37,38 +37,60 @@ const lockAllObjects = (option) => {
 	canvas.getObjects().forEach(object => { lockObject(object, option); });
 }
 
-const toggleMode = (mode) => {
-    if (mode === modes.pan) {
-        if (currentMode === modes.pan) {
-            currentMode = ''
-        } else {
-	    lockAllObjects(true);
-	    canObjectsMove = false
-            currentMode = modes.pan
-            canvas.isDrawingMode = false
-            canvas.renderAll()
-        }
-    } else if (mode === modes.drawing) {
-        if (currentMode === modes.drawing) {
+const endDrawingMode = (mode) => {
+    if (mode === modes.drawing) {
+        return
+    } else {
             currentMode = ''
             canvas.isDrawingMode = false
             canvas.renderAll()
-        } else {
-	    canObjectsMove = false
-            currentMode = modes.drawing
-            canvas.isDrawingMode = true
-            canvas.renderAll()
-        }
-    } else if (mode === modes.move) {
-	if (currentMode == modes.move) {
-	    currentMode = ''
-	} else {
-	    lockAllObjects(false);
-	    canObjectsMove = true
-	    currentMode = modes.move
-	    canvas.isDrawingMode = false
+    }
+}
 
-	}
+const endMovindMode = (mode) => {
+    if (mode === modes.move) {
+        return
+    } else {
+        canObjectsMove = false
+    }
+}
+
+const highlightButton = (mode) => {
+    $('#mode-buttons').children().each( function(){
+        var innerDivId = $(this).attr('id');
+        console.log(innerDivId)
+            if (innerDivId === mode) {
+                $(this).addClass('active')
+//            document.getElementById(innerDivId).focus();
+//            document.getElementById(innerDivId).style.background('')
+            console.log("Highlight - Kliknąłeś w: " + innerDivId)
+        } else {
+            $(this).removeClass('active')
+            // document.getElementById(innerDivId).style.background='#F21314';
+            console.log("Highlight - Nie kliknąłeś w: " + innerDivId);
+        }
+    });
+}
+
+const toggleMode = (mode) => {
+    endDrawingMode(mode)
+    endMovindMode(mode)
+    highlightButton(mode)
+    currentMode = mode
+    if (mode === modes.pan) {
+	    lockAllObjects(true);
+        canvas.renderAll()
+    } else if (mode === modes.drawing) {
+        canObjectsMove = false
+        canvas.isDrawingMode = true
+        canvas.renderAll()
+    } else if (mode === modes.move) {
+        lockAllObjects(false);
+        canObjectsMove = true
+        canvas.isDrawingMode = false
+    } else if (mode === modes.erase) {
+            console.log("Erase mode on!\n");
+            canvas.isDrawingMode = false
     }
 }
 
@@ -120,6 +142,7 @@ const setColorListener = () => {
 }
 
 // Moze jakos inaczej nazwac ten event - nie znam konwencji :/
+// Jest git :) //
 const setBrushSizeListener = () => {
      const brushSize = document.getElementById('brushSize')
      brushSize.addEventListener('change', (event) => {
@@ -242,8 +265,10 @@ let currentMode;
 const modes = {
     pan: 'pan',
     drawing: 'drawing',
-    move: 'move'
+    move: 'move',
+    erase: 'erase'
 }
+
 const reader = new FileReader()
 
 setColorListener()
@@ -259,5 +284,6 @@ reader.addEventListener("load", () => {
     fabric.Image.fromURL(reader.result, img => {
         canvas.add(img)
         canvas.requestRenderAll()
+
     })
 })

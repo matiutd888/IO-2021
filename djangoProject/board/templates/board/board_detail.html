@@ -21,9 +21,13 @@
     </div>
     <div class="d-flex p-2 justify-content-between">
         <div class="float-left">
-            <button class="btn btn-outline-primary" onclick="toggleMode(modes.move)"> Move objects around </button>
-            <button class="btn btn-outline-primary" onclick="toggleMode(modes.pan)">Toggle Pan</button>
-            <button class="btn btn-outline-primary" onclick="toggleMode(modes.drawing)">Toggle Drawing</button>
+            <div id="mode-buttons">
+                <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)">Move objects around</button>
+                <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)">Toggle Pan</button>
+                <button class="btn btn-outline-primary" id="drawing"  aria-pressed="true" onclick="toggleMode(modes.drawing)">Toggle Drawing</button>
+                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)">Erase</button>
+            </div>
+
             <button class="btn btn-outline-info" onclick="clearCanvas(canvas, svgState)">Clear</button>
             <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, svgState, bgUrl)">Restore</button>
         </div>
