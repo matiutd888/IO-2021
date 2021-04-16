@@ -8,7 +8,6 @@ document.body.onmouseup = function () {
 }
 
 const initCanvas = (id) => {
-    toggleMode(modes.move) // default mode
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
     return new fabric.Canvas(id, {
@@ -303,6 +302,7 @@ document.addEventListener('keypress', function (e) {
 
 
 const canvas = initCanvas('canvas')
+
 const JSONState = {}
 let mousePressed = false
 let color = '#000000'
@@ -317,6 +317,7 @@ const modes = {
     move: 'move',
     erase: 'erase'
 }
+toggleMode(modes.move) // default mode
 
 const reader = new FileReader()
 
