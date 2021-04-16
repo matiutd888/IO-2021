@@ -1,3 +1,4 @@
+
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
@@ -14,6 +15,7 @@ const initCanvas = (id) => {
         height: h - 150,
         selection: false
     });
+
 }
 
 setCanvasSize = () => {
@@ -125,25 +127,6 @@ const toggleMode = (mode) => {
     }
 }
 
-// fabric.Object.prototype.controls.deleteControl = new fabric.Control({
-//     x: 0.5,
-//     y: -0.5,
-//     offsetY: -16,
-//     offsetX: 16,
-//     cursorStyle: 'pointer',
-//     mouseUpHandler: deleteObject,
-//     render: renderIcon(deleteImg),
-//     cornerSize: 24
-// });
-
-// function deleteObject(eventData, transform) {
-//     var target = transform.target;
-//     var canvas = target.canvas;
-//         canvas.remove(target);
-//     canvas.requestRenderAll();
-// }
-
-
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
@@ -166,7 +149,7 @@ const setPanEvents = (canvas) => {
             console.log("Clicked during erase mode!")
             // canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
             // canvas.requestRenderAll()                   // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
-                                                           // najeżdżania. Może więc warto to usunąć
+            // najeżdżania. Może więc warto to usunąć
         }
     })
     canvas.on('mouse:up', (event) => {
@@ -302,8 +285,24 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
+const operationTypes = {
+    modify: 'M', add: 'A', remove: 'R'
+}
+
+document.addEventListener('keypress', function (e) {
+    console.log("You pressed" + e.key);
+    if (e.ctrlKey && e.key === 'z') {
+        undo()
+        console.log("ctrl z pressed!\n");
+    } else if (e.ctrlKey && e.key === 'y') {
+        console.log("ctrl y pressed!\n")
+        redo();
+    }
+})
+
 
 const canvas = initCanvas('canvas')
+
 const JSONState = {}
 let mousePressed = false
 let color = '#000000'
@@ -318,8 +317,94 @@ const modes = {
     move: 'move',
     erase: 'erase'
 }
+toggleMode(modes.move) // default mode
 
 const reader = new FileReader()
+
+class EraseCommand {
+    constructor(target) {
+        this.target = target
+        this.type = operationTypes.remove
+    }
+    undo(canvas) {
+        canvas.add(this.target)
+        canvas.requestRenderAll()
+    }
+
+    execute(canvas) {
+        canvas.remove(this.target)
+        canvas.requestRenderAll()
+    }
+}
+
+class AddCommand {
+    constructor(target) {
+        this.target = target
+        this.type = operationTypes.add
+    }
+    undo(canvas) {
+        canvas.remove(this.target)
+        canvas.requestRenderAll()
+    }
+
+    execute(canvas) {
+        canvas.add(this.target)
+        canvas.requestRenderAll()
+    }
+}
+
+var undo_stack = []
+var redo_stack = []
+is_redoing = false
+should_push = true
+function undo() {
+    if (undo_stack.length === 0)
+        return
+    let op = undo_stack.pop()
+    redo_stack.push(op)
+    should_push = false
+    op.undo(canvas)
+    should_push = true
+
+}
+
+function redo() {
+   is_redoing = true
+    if (redo_stack.length === 0)
+        return
+    const op = redo_stack.pop();
+
+    op.execute(canvas)
+}
+
+
+canvas.on("object:added", (e) => {
+    if (should_push) {
+        if (!is_redoing) {
+        redo_stack = []
+    }
+    is_redoing = false
+        undo_stack.push(new AddCommand(e.target))
+    }
+
+});
+
+canvas.on("object:modified", (e) => {
+    var object = e.target
+    object.saveState()
+    console.log(e.target)
+})
+
+canvas.on("object:removed", e => {
+    if (should_push) {
+        if (!is_redoing) {
+        redo_stack = []
+      }
+        is_redoing = false
+        undo_stack.push(new EraseCommand(e.target))
+    }
+
+})
 
 setColorListener()
 setBrushSizeListener()
