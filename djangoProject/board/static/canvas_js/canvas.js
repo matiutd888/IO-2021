@@ -307,7 +307,7 @@ const operationTypes = {
     modify: 'M', add: 'A', remove: 'R'
 }
 
-document.addEventListener('keypress', function (e) {
+document.addEventListener('keydown', function (e) {
     console.log("You pressed" + e.key);
     if (e.ctrlKey && e.key === 'z') {
         undo()
