@@ -210,7 +210,7 @@ const setBrushSizeListener = () => {
 }
 
 const clearCanvas = (canvas, state) => {
-    state.val = canvas.toSVG()
+    state.val = canvas.toJSON()
     canvas.getObjects().forEach((o) => {
         if (o !== canvas.backgroundImage) {
             canvas.remove(o)
@@ -220,12 +220,7 @@ const clearCanvas = (canvas, state) => {
 
 const restoreCanvas = (canvas, state, bgUrl) => {
     if (state.val) {
-        fabric.loadSVGFromString(state.val, objects => {
-            console.log(objects)
-            objects = objects.filter(o => o['xlink:href'] !== bgUrl)
-            canvas.add(...objects)
-            canvas.requestRenderAll()
-        })
+        canvas.loadFromJSON(state.val)
     }
 }
 
@@ -287,13 +282,13 @@ const groupObjects = (canvas, group, shouldGroup) => {
     if (shouldGroup) {
         const objects = canvas.getObjects()
         group.val = new fabric.Group(objects, {cornerColor: 'white'})
-        clearCanvas(canvas, svgState)
+        clearCanvas(canvas, JSONState)
         canvas.add(group.val)
         canvas.requestRenderAll()
     } else {
         group.val.destroy()
         let oldGroup = group.val.getObjects()
-        clearCanvas(canvas, svgState)
+        clearCanvas(canvas, JSONState)
         canvas.add(...oldGroup)
         group.val = null
         canvas.requestRenderAll()
@@ -309,7 +304,7 @@ const imgAdded = (e) => {
 
 
 const canvas = initCanvas('canvas')
-const svgState = {}
+const JSONState = {}
 let mousePressed = false
 let color = '#000000'
 const group = {}
