@@ -304,34 +304,27 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
-// https://stackoverflow.com/questions/19043219/undo-redo-feature-in-fabric-js
-//variables for undo/redo
-let pause_saving = false;
-let undo_stack = []
-let redo_stack = []
+// UNDO REDO
+var isRedoing = false;
+var add_history = []; // Objects added, removed history
+var remove_history = [];
+var operation_history = [];
+
+var operations = {
+    add: 'add', remove: 'remove'
+}
 
 function undo() {
-    pause_saving=true;
-    redo_stack.push(undo_stack.pop());
-    let previous_state = undo_stack[undo_stack.length-1];
-    if (previous_state == null) {
-        previous_state = '{}';
-    }
-    canvas.loadFromJSON(previous_state,function(){
+    if (canvas._objects.length > 0) {
+        add_history.push(canvas._objects.pop());
         canvas.renderAll();
-    })
-    pause_saving=false;
+    }
 }
 
 function redo() {
-    pause_saving=true;
-    state = redo_stack.pop();
-    if (state != null) {
-        undo_stack.push(state);
-        canvas.loadFromJSON(state,function(){
-            canvas.renderAll();
-        })
-        pause_saving=false;
+    isRedoing = true;
+    if (add_history.length > 0) {
+        canvas.add(add_history.pop());
     }
 }
 
@@ -365,27 +358,21 @@ const modes = {
 
 const reader = new FileReader()
 
-canvas.on('object:added', function(event){
-    if (!pause_saving) {
-        undo_stack.push(JSON.stringify(canvas));
-        redo_stack = [];
-        console.log('Object added, state saved', undo_stack);
+canvas.on('object:added', function () {
+    if (!isRedoing) { // If object is added and we are not redoing, we should clear history.
+        add_history = [];
     }
+    isRedoing = false;
 });
-canvas.on('object:modified', function(event){
-    if (!pause_saving) {
-        undo_stack.push(JSON.stringify(canvas));
-        redo_stack = [];
-        console.log('Object modified, state saved', undo_stack);
+
+canvas.on('object:removed', function (e) {
+    console.log("Object " + e.target + " removed!")
+    if (!isRedoing) {
+        remove_history = []
+        remove_history.push(e.target)
     }
-});
-canvas.on('object:removed', function(event){
-    if (!pause_saving) {
-        undo_stack.push(JSON.stringify(canvas));
-        redo_stack = [];
-        console.log('Object removed, state saved', undo_stack);
-    }
-});
+    isRedoing = false
+})
 
 setColorListener()
 setBrushSizeListener()
