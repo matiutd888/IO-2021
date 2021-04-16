@@ -1,9 +1,96 @@
+
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
 }
 document.body.onmouseup = function () {
     --mouseDown;
+}
+
+class TransformCommand {
+  constructor(receiver) {
+    this.receiver = receiver;
+
+    this._initStateProperties();
+
+    this.state = {};
+    this.prevState = {};
+
+    this._saveState();
+    this._savePrevState();
+  }
+  execute() {
+    this._restoreState();
+    this.receiver.setCoords();
+  }
+  undo() {
+    this._restorePrevState();
+    this.receiver.setCoords();
+  }
+  // private
+  _initStateProperties() {
+    this.stateProperties = Object.keys(this.receiver._stateProperties);
+  }
+  _restoreState() {
+    this._restore(this.state);
+  }
+  _restorePrevState() {
+    this._restore(this.prevState);
+  }
+  _restore(state) {
+    this.stateProperties.forEach(prop => {
+      this.receiver.set(prop, state[prop]);
+    });
+  }
+  _saveState() {
+    this.stateProperties.forEach(prop => {
+      this.state[prop] = this.receiver.get(prop);
+    });
+  }
+  _savePrevState() {
+    if (this.receiver._stateProperties) {
+      this.stateProperties.forEach(prop => {
+        this.prevState[prop] = this.receiver._stateProperties[prop];
+      });
+    }
+  }
+}
+
+class CommandHistory {
+  constructor() {
+    this.commands = [];
+    this.index = 0;
+  }
+  getIndex() {
+    return this.index;
+  }
+  back() {
+    if (this.index > 0) {
+      let command = this.commands[--this.index];
+      command.undo();
+    }
+    return this;
+  }
+  forward() {
+    if (this.index < this.commands.length) {
+      let command = this.commands[this.index++];
+      command.execute();
+    }
+    return this;
+  }
+  add(command) {
+    if (this.commands.length) {
+      this.commands.splice(this.index, this.commands.length - this.index);
+    }
+    this.commands.push(command);
+    this.index++;
+    return this;
+  }
+  clear() {
+    this.commands.length = 0;
+    this.index = 0;
+    return this;
+  }
 }
 
 
@@ -304,29 +391,47 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
+const history = new CommandHistory();
+
 // UNDO REDO
-var isRedoing = false;
-var add_history = []; // Objects added, removed history
-var remove_history = [];
-var operation_history = [];
-
-var operations = {
-    add: 'add', remove: 'remove'
+// var Operation = class {
+//     constructor(before, after, type, canvas) {
+//         this.before = before;
+//         this.after = after;
+//         this.type = type;
+//         this.canvas = canvas
+//     }
+//
+//     undo() {
+//     }
+//
+//     execute() {
+//     }
+// };
+//
+const operationTypes = {
+    modify: 'M', add: 'A', remove: 'R'
 }
-
-function undo() {
-    if (canvas._objects.length > 0) {
-        add_history.push(canvas._objects.pop());
-        canvas.renderAll();
-    }
-}
-
-function redo() {
-    isRedoing = true;
-    if (add_history.length > 0) {
-        canvas.add(add_history.pop());
-    }
-}
+//
+// var Modify = class {
+//     constructor(before, after, canvas) {
+//         this.before = before;
+//         this.after = after;
+//         this.type = operationTypes.modify;
+//         this.canvas = canvas
+//     }
+//
+//     undo() {
+//         this.canvas.remove(this.after)
+//         this.canvas.add(this.before)
+//     }
+//
+//     execute() {
+//         this.canvas.remove(this.before)
+//         this.canvas.add(this.after)
+//     }
+//
+// }
 
 document.addEventListener('keypress', function (e) {
     console.log("You pressed" + e.key);
@@ -358,21 +463,105 @@ const modes = {
 
 const reader = new FileReader()
 
-canvas.on('object:added', function () {
-    if (!isRedoing) { // If object is added and we are not redoing, we should clear history.
-        add_history = [];
+class EraseCommand {
+    constructor(target, canvas) {
+        this.target = target
+        this.canvas = canvas
+        this.type = operationTypes.remove
     }
-    isRedoing = false;
+    undo() {
+        this.canvas.add(this.target)
+        this.canvas.requestRenderAll()
+    }
+
+    execute() {
+        this.canvas.remove(this.target)
+        this.canvas.requestRenderAll()
+    }
+}
+
+class AddCommand {
+    constructor(target, canvas) {
+        this.target = target
+        this.canvas = canvas
+        this.type = operationTypes.add
+    }
+    undo() {
+        this.canvas.remove(this.target)
+        this.canvas.requestRenderAll()
+    }
+
+    execute() {
+        this.canvas.add(this.target)
+        this.canvas.requestRenderAll()
+    }
+}
+
+var undo_stack = []
+var redo_stack = []
+is_redoing = false
+should_push = true
+function undo() {
+    if (undo_stack.length === 0)
+        return
+    let op = undo_stack.pop()
+
+    redo_stack.push(op)
+    should_push = false
+    op.undo()
+    should_push = true
+
+}
+
+function redo() {
+   is_redoing = true
+    if (redo_stack.length === 0)
+        return
+    const op = redo_stack.pop();
+
+    op.execute()
+}
+
+
+canvas.on("object:added", (e) => {
+    if (should_push) {
+        if (!is_redoing) {
+        redo_stack = []
+    }
+    is_redoing = false
+
+        undo_stack.push(new AddCommand(e.target, canvas))
+    }
+
 });
 
-canvas.on('object:removed', function (e) {
-    console.log("Object " + e.target + " removed!")
-    if (!isRedoing) {
-        remove_history = []
-        remove_history.push(e.target)
+canvas.on("object:removed", e => {
+    if (should_push) {
+        if (!is_redoing) {
+        redo_stack = []
+      }
+        is_redoing = false
+        undo_stack.push(new EraseCommand(e.target, canvas))
     }
-    isRedoing = false
+
 })
+
+
+// canvas.on('object:added', function () {
+//     if (!isRedoing) { // If object is added and we are not redoing, we should clear history.
+//         add_history = [];
+//     }
+//     isRedoing = false;
+// });
+//
+// canvas.on('object:removed', function (e) {
+//     console.log("Object " + e.target + " removed!")
+//     if (!isRedoing) {
+//         remove_history = []
+//         remove_history.push(e.target)
+//     }
+//     isRedoing = false
+// })
 
 setColorListener()
 setBrushSizeListener()
