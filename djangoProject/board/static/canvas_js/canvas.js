@@ -7,93 +7,6 @@ document.body.onmouseup = function () {
     --mouseDown;
 }
 
-class TransformCommand {
-  constructor(receiver) {
-    this.receiver = receiver;
-
-    this._initStateProperties();
-
-    this.state = {};
-    this.prevState = {};
-
-    this._saveState();
-    this._savePrevState();
-  }
-  execute() {
-    this._restoreState();
-    this.receiver.setCoords();
-  }
-  undo() {
-    this._restorePrevState();
-    this.receiver.setCoords();
-  }
-  // private
-  _initStateProperties() {
-    this.stateProperties = Object.keys(this.receiver._stateProperties);
-  }
-  _restoreState() {
-    this._restore(this.state);
-  }
-  _restorePrevState() {
-    this._restore(this.prevState);
-  }
-  _restore(state) {
-    this.stateProperties.forEach(prop => {
-      this.receiver.set(prop, state[prop]);
-    });
-  }
-  _saveState() {
-    this.stateProperties.forEach(prop => {
-      this.state[prop] = this.receiver.get(prop);
-    });
-  }
-  _savePrevState() {
-    if (this.receiver._stateProperties) {
-      this.stateProperties.forEach(prop => {
-        this.prevState[prop] = this.receiver._stateProperties[prop];
-      });
-    }
-  }
-}
-
-class CommandHistory {
-  constructor() {
-    this.commands = [];
-    this.index = 0;
-  }
-  getIndex() {
-    return this.index;
-  }
-  back() {
-    if (this.index > 0) {
-      let command = this.commands[--this.index];
-      command.undo();
-    }
-    return this;
-  }
-  forward() {
-    if (this.index < this.commands.length) {
-      let command = this.commands[this.index++];
-      command.execute();
-    }
-    return this;
-  }
-  add(command) {
-    if (this.commands.length) {
-      this.commands.splice(this.index, this.commands.length - this.index);
-    }
-    this.commands.push(command);
-    this.index++;
-    return this;
-  }
-  clear() {
-    this.commands.length = 0;
-    this.index = 0;
-    return this;
-  }
-}
-
-
 const initCanvas = (id) => {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
@@ -212,26 +125,6 @@ const toggleMode = (mode) => {
         canvas.on("mouse:over", eraseHandler)
     }
 }
-
-
-// fabric.Object.prototype.controls.deleteControl = new fabric.Control({
-//     x: 0.5,
-//     y: -0.5,
-//     offsetY: -16,
-//     offsetX: 16,
-//     cursorStyle: 'pointer',
-//     mouseUpHandler: deleteObject,
-//     render: renderIcon(deleteImg),
-//     cornerSize: 24
-// });
-
-// function deleteObject(eventData, transform) {
-//     var target = transform.target;
-//     var canvas = target.canvas;
-//         canvas.remove(target);
-//     canvas.requestRenderAll();
-// }
-
 
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
@@ -391,47 +284,9 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
-const history = new CommandHistory();
-
-// UNDO REDO
-// var Operation = class {
-//     constructor(before, after, type, canvas) {
-//         this.before = before;
-//         this.after = after;
-//         this.type = type;
-//         this.canvas = canvas
-//     }
-//
-//     undo() {
-//     }
-//
-//     execute() {
-//     }
-// };
-//
 const operationTypes = {
     modify: 'M', add: 'A', remove: 'R'
 }
-//
-// var Modify = class {
-//     constructor(before, after, canvas) {
-//         this.before = before;
-//         this.after = after;
-//         this.type = operationTypes.modify;
-//         this.canvas = canvas
-//     }
-//
-//     undo() {
-//         this.canvas.remove(this.after)
-//         this.canvas.add(this.before)
-//     }
-//
-//     execute() {
-//         this.canvas.remove(this.before)
-//         this.canvas.add(this.after)
-//     }
-//
-// }
 
 document.addEventListener('keypress', function (e) {
     console.log("You pressed" + e.key);
@@ -464,36 +319,34 @@ const modes = {
 const reader = new FileReader()
 
 class EraseCommand {
-    constructor(target, canvas) {
+    constructor(target) {
         this.target = target
-        this.canvas = canvas
         this.type = operationTypes.remove
     }
-    undo() {
-        this.canvas.add(this.target)
-        this.canvas.requestRenderAll()
+    undo(canvas) {
+        canvas.add(this.target)
+        canvas.requestRenderAll()
     }
 
-    execute() {
-        this.canvas.remove(this.target)
-        this.canvas.requestRenderAll()
+    execute(canvas) {
+        canvas.remove(this.target)
+        canvas.requestRenderAll()
     }
 }
 
 class AddCommand {
-    constructor(target, canvas) {
+    constructor(target) {
         this.target = target
-        this.canvas = canvas
         this.type = operationTypes.add
     }
-    undo() {
-        this.canvas.remove(this.target)
-        this.canvas.requestRenderAll()
+    undo(canvas) {
+        canvas.remove(this.target)
+        canvas.requestRenderAll()
     }
 
-    execute() {
-        this.canvas.add(this.target)
-        this.canvas.requestRenderAll()
+    execute(canvas) {
+        canvas.add(this.target)
+        canvas.requestRenderAll()
     }
 }
 
@@ -505,10 +358,9 @@ function undo() {
     if (undo_stack.length === 0)
         return
     let op = undo_stack.pop()
-
     redo_stack.push(op)
     should_push = false
-    op.undo()
+    op.undo(canvas)
     should_push = true
 
 }
@@ -519,7 +371,7 @@ function redo() {
         return
     const op = redo_stack.pop();
 
-    op.execute()
+    op.execute(canvas)
 }
 
 
@@ -530,7 +382,7 @@ canvas.on("object:added", (e) => {
     }
     is_redoing = false
 
-        undo_stack.push(new AddCommand(e.target, canvas))
+        undo_stack.push(new AddCommand(e.target))
     }
 
 });
@@ -538,7 +390,7 @@ canvas.on("object:added", (e) => {
 canvas.on("object:modified", (e) => {
     var object = e.target
     object.saveState()
-    console.log("modified: " + object.originalState)
+    console.log(e.target)
 })
 
 canvas.on("object:removed", e => {
@@ -547,27 +399,10 @@ canvas.on("object:removed", e => {
         redo_stack = []
       }
         is_redoing = false
-        undo_stack.push(new EraseCommand(e.target, canvas))
+        undo_stack.push(new EraseCommand(e.target))
     }
 
 })
-
-
-// canvas.on('object:added', function () {
-//     if (!isRedoing) { // If object is added and we are not redoing, we should clear history.
-//         add_history = [];
-//     }
-//     isRedoing = false;
-// });
-//
-// canvas.on('object:removed', function (e) {
-//     console.log("Object " + e.target + " removed!")
-//     if (!isRedoing) {
-//         remove_history = []
-//         remove_history.push(e.target)
-//     }
-//     isRedoing = false
-// })
 
 setColorListener()
 setBrushSizeListener()
