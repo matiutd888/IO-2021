@@ -535,6 +535,12 @@ canvas.on("object:added", (e) => {
 
 });
 
+canvas.on("object:modified", (e) => {
+    var object = e.target
+    object.saveState()
+    console.log("modified: " + object.originalState)
+})
+
 canvas.on("object:removed", e => {
     if (should_push) {
         if (!is_redoing) {
