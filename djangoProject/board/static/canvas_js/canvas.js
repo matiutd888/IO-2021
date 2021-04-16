@@ -1,3 +1,11 @@
+var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
+document.body.onmousedown = function () {
+    ++mouseDown;
+}
+document.body.onmouseup = function () {
+    --mouseDown;
+}
+
 const initCanvas = (id) => {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
@@ -12,8 +20,8 @@ setCanvasSize = () => {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.offsetHeight;
     canvas.setDimensions({
-	width: w,
-	height: h - 150
+        width: w,
+        height: h - 150
     });
     canvas.renderAll();
     console.log("Expected width " + w + " Expected height " + h);
@@ -29,21 +37,23 @@ const setBackground = (url, canvas) => {
 
 
 const lockObject = (object, option) => {
-	object.lockMovementX = object.lockMovementY = option;
-	object.hasBorders = object.hasControls = !option;
+    object.lockMovementX = object.lockMovementY = option;
+    object.hasBorders = object.hasControls = !option;
 }
 
 const lockAllObjects = (option) => {
-	canvas.getObjects().forEach(object => { lockObject(object, option); });
+    canvas.getObjects().forEach(object => {
+        lockObject(object, option);
+    });
 }
 
 const endDrawingMode = (mode) => {
     if (mode === modes.drawing) {
         return
     } else {
-            currentMode = ''
-            canvas.isDrawingMode = false
-            canvas.renderAll()
+        currentMode = ''
+        canvas.isDrawingMode = false
+        canvas.renderAll()
     }
 }
 
@@ -55,12 +65,31 @@ const endMovindMode = (mode) => {
     }
 }
 
+const eraseHandler = (e) => {
+    if (currentMode === modes.erase) {
+        canvas.setCursor('default') // TODO i tak nie działa
+        if (mouseDown) {
+            canvas.remove(e.target)
+        }
+        canvas.requestRenderAll()
+    }
+}
+
+const endErasingMode = (mode) => {
+    if (mode === modes.erase) {
+        return
+    } else {
+        console.log("ending erasing mode")
+        canvas.setCursor('default')
+        canvas.off('mouse:over', eraseHandler)
+    }
+}
 const highlightButton = (mode) => {
-    $('#mode-buttons').children().each( function(){
+    $('#mode-buttons').children().each(function () {
         var innerDivId = $(this).attr('id');
         console.log(innerDivId)
-            if (innerDivId === mode) {
-                $(this).addClass('active')
+        if (innerDivId === mode) {
+            $(this).addClass('active')
 //            document.getElementById(innerDivId).focus();
 //            document.getElementById(innerDivId).style.background('')
             console.log("Highlight - Kliknąłeś w: " + innerDivId)
@@ -75,10 +104,11 @@ const highlightButton = (mode) => {
 const toggleMode = (mode) => {
     endDrawingMode(mode)
     endMovindMode(mode)
+    endErasingMode(mode)
     highlightButton(mode)
     currentMode = mode
     if (mode === modes.pan) {
-	    lockAllObjects(true);
+        lockAllObjects(true);
         canvas.renderAll()
     } else if (mode === modes.drawing) {
         canObjectsMove = false
@@ -87,10 +117,11 @@ const toggleMode = (mode) => {
     } else if (mode === modes.move) {
         lockAllObjects(false);
         canObjectsMove = true
-        canvas.isDrawingMode = false
     } else if (mode === modes.erase) {
-            console.log("Erase mode on!\n");
-            canvas.isDrawingMode = false
+        // TODO dodać kursor
+        canvas.setCursor('grab')
+        console.log("Erase mode on!\n");
+        canvas.on("mouse:over", eraseHandler)
     }
 }
 
@@ -107,10 +138,16 @@ const setPanEvents = (canvas) => {
     })
     // keep track of mouse down/up
     canvas.on('mouse:down', (event) => {
+        console.log("Mouse down!")
         mousePressed = true;
         if (currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
+        } else if (currentMode === modes.erase) {
+            console.log("Clicked during erase mode!")
+            // canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
+            // canvas.requestRenderAll()                   // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
+                                                           // najeżdżania. Może więc warto to usunąć
         }
     })
     canvas.on('mouse:up', (event) => {
@@ -120,14 +157,15 @@ const setPanEvents = (canvas) => {
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
-	var delta = event.e.deltaY;
-	var zoom = canvas.getZoom();
-	zoom *= 0.97 ** delta;
-	if (zoom > 20) zoom = 20;
-	if (zoom < 0.01) zoom = 0.01;
-	canvas.setZoom(zoom);
-	event.e.preventDefault();
-	event.e.stopPropagation();
+        var delta = event.e.deltaY;
+        delta /= 3 // Ta linijka zmniejsza tempo scrollowania
+        var zoom = canvas.getZoom();
+        zoom *= 0.97 ** delta;
+        if (zoom > 20) zoom = 20;
+        if (zoom < 0.01) zoom = 0.01;
+        canvas.setZoom(zoom);
+        event.e.preventDefault();
+        event.e.stopPropagation();
     })
 }
 
@@ -144,18 +182,18 @@ const setColorListener = () => {
 // Moze jakos inaczej nazwac ten event - nie znam konwencji :/
 // Jest git :) //
 const setBrushSizeListener = () => {
-     const brushSize = document.getElementById('brushSize')
-     brushSize.addEventListener('change', (event) => {
+    const brushSize = document.getElementById('brushSize')
+    brushSize.addEventListener('change', (event) => {
         console.log("setBrushSizeListener" + event.target.value)
         canvas.freeDrawingBrush.width = parseInt(event.target.value, 10)
-	canvas.requestRenderAll()
-     })
+        canvas.requestRenderAll()
+    })
 }
 
 const clearCanvas = (canvas, state) => {
     state.val = canvas.toSVG()
     canvas.getObjects().forEach((o) => {
-        if(o !== canvas.backgroundImage) {
+        if (o !== canvas.backgroundImage) {
             canvas.remove(o)
         }
     })
@@ -171,7 +209,6 @@ const restoreCanvas = (canvas, state, bgUrl) => {
         })
     }
 }
-
 
 
 const createRect = (canvas) => {
@@ -250,7 +287,6 @@ const imgAdded = (e) => {
     const file = inputElem.files[0];
     reader.readAsDataURL(file)
 }
-
 
 
 const canvas = initCanvas('canvas')
