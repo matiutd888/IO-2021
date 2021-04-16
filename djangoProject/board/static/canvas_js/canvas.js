@@ -278,6 +278,24 @@ const createCirc = (canvas) => {
     })
 }
 
+const createTextbox = (canvas) => {
+    console.log("text")
+    const canvCenter = canvas.getCenter()
+    textbox = new fabric.Textbox('Type here', {
+	left: canvCenter.left,
+	top: canvCenter.top,
+	width: 100,
+	height: 100,
+	originX: 'center',
+	originY: 'center',
+	fill: '#000000'
+    })
+    canvas.add(textbox)
+    canvas.renderAll()
+}
+	
+	
+
 const groupObjects = (canvas, group, shouldGroup) => {
     if (shouldGroup) {
         const objects = canvas.getObjects()
