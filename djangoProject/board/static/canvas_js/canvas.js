@@ -8,6 +8,7 @@ document.body.onmouseup = function () {
 }
 
 const initCanvas = (id) => {
+    toggleMode(modes.move) // default mode
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
     return new fabric.Canvas(id, {
@@ -15,7 +16,7 @@ const initCanvas = (id) => {
         height: h - 150,
         selection: false
     });
-    toggleMode(modes.move) // default mode
+
 }
 
 setCanvasSize = () => {
