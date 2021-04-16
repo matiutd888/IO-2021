@@ -15,6 +15,7 @@ const initCanvas = (id) => {
         height: h - 150,
         selection: false
     });
+    toggleMode(modes.move) // default mode
 }
 
 setCanvasSize = () => {
@@ -381,7 +382,6 @@ canvas.on("object:added", (e) => {
         redo_stack = []
     }
     is_redoing = false
-
         undo_stack.push(new AddCommand(e.target))
     }
 
