@@ -125,6 +125,25 @@ const toggleMode = (mode) => {
     }
 }
 
+// fabric.Object.prototype.controls.deleteControl = new fabric.Control({
+//     x: 0.5,
+//     y: -0.5,
+//     offsetY: -16,
+//     offsetX: 16,
+//     cursorStyle: 'pointer',
+//     mouseUpHandler: deleteObject,
+//     render: renderIcon(deleteImg),
+//     cornerSize: 24
+// });
+
+// function deleteObject(eventData, transform) {
+//     var target = transform.target;
+//     var canvas = target.canvas;
+//         canvas.remove(target);
+//     canvas.requestRenderAll();
+// }
+
+
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
