@@ -6,6 +6,7 @@ document.body.onmouseup = function () {
     --mouseDown;
 }
 
+
 const initCanvas = (id) => {
     var w = document.documentElement.clientWidth;
     var h = document.documentElement.clientHeight;
@@ -125,6 +126,7 @@ const toggleMode = (mode) => {
     }
 }
 
+
 // fabric.Object.prototype.controls.deleteControl = new fabric.Control({
 //     x: 0.5,
 //     y: -0.5,
@@ -166,7 +168,7 @@ const setPanEvents = (canvas) => {
             console.log("Clicked during erase mode!")
             // canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
             // canvas.requestRenderAll()                   // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
-                                                           // najeżdżania. Może więc warto to usunąć
+            // najeżdżania. Może więc warto to usunąć
         }
     })
     canvas.on('mouse:up', (event) => {
@@ -302,6 +304,48 @@ const imgAdded = (e) => {
     reader.readAsDataURL(file)
 }
 
+// https://stackoverflow.com/questions/19043219/undo-redo-feature-in-fabric-js
+//variables for undo/redo
+let pause_saving = false;
+let undo_stack = []
+let redo_stack = []
+
+function undo() {
+    pause_saving=true;
+    redo_stack.push(undo_stack.pop());
+    let previous_state = undo_stack[undo_stack.length-1];
+    if (previous_state == null) {
+        previous_state = '{}';
+    }
+    canvas.loadFromJSON(previous_state,function(){
+        canvas.renderAll();
+    })
+    pause_saving=false;
+}
+
+function redo() {
+    pause_saving=true;
+    state = redo_stack.pop();
+    if (state != null) {
+        undo_stack.push(state);
+        canvas.loadFromJSON(state,function(){
+            canvas.renderAll();
+        })
+        pause_saving=false;
+    }
+}
+
+document.addEventListener('keypress', function (e) {
+    console.log("You pressed" + e.key);
+    if (e.ctrlKey && e.key === 'z') {
+        undo()
+        console.log("ctrl z pressed!\n");
+    } else if (e.ctrlKey && e.key === 'y') {
+        console.log("ctrl y pressed!\n")
+        redo();
+    }
+})
+
 
 const canvas = initCanvas('canvas')
 const JSONState = {}
@@ -320,6 +364,28 @@ const modes = {
 }
 
 const reader = new FileReader()
+
+canvas.on('object:added', function(event){
+    if (!pause_saving) {
+        undo_stack.push(JSON.stringify(canvas));
+        redo_stack = [];
+        console.log('Object added, state saved', undo_stack);
+    }
+});
+canvas.on('object:modified', function(event){
+    if (!pause_saving) {
+        undo_stack.push(JSON.stringify(canvas));
+        redo_stack = [];
+        console.log('Object modified, state saved', undo_stack);
+    }
+});
+canvas.on('object:removed', function(event){
+    if (!pause_saving) {
+        undo_stack.push(JSON.stringify(canvas));
+        redo_stack = [];
+        console.log('Object removed, state saved', undo_stack);
+    }
+});
 
 setColorListener()
 setBrushSizeListener()
