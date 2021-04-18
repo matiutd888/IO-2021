@@ -43,10 +43,19 @@ const lockObject = (object, option) => {
     object.hasBorders = object.hasControls = !option;
 }
 
+const lockAddedObjectListener =  (e) => {
+        lockObject(e.target, true);
+}
 const lockAllObjects = (option) => {
     canvas.getObjects().forEach(object => {
         lockObject(object, option);
     });
+
+    if (option) {
+        canvas.on('object:added', lockAddedObjectListener)
+    } else {
+        canvas.off('object:added', lockAddedObjectListener)
+    }
 }
 
 const endDrawingMode = (mode) => {
