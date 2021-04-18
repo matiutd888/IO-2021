@@ -222,19 +222,7 @@ const createRect = (canvas) => {
         cornerColor: 'white'
     })
     canvas.add(rect)
-
-    // rect.animate('top', canvCenter.top, {
-    //     onChange: canvas.renderAll.bind(canvas)
-    // });
-    rect.on('selected', () => {
-        rect.set('fill', 'white')
-        canvas.renderAll()
-    })
-    rect.on('deselected', () => {
-        rect.set('fill', 'green')
-        canvas.renderAll()
-    })
-    // canvas.renderAll();
+    canvas.renderAll()
 }
 
 const createCirc = (canvas) => {
@@ -251,14 +239,6 @@ const createCirc = (canvas) => {
     })
     canvas.add(circle)
     canvas.renderAll()
-    circle.on('selected', () => {
-        circle.set('fill', 'white')
-        canvas.requestRenderAll()
-    })
-    circle.on('deselected', () => {
-        circle.set('fill', 'orange')
-        canvas.requestRenderAll()
-    })
 }
 
 const createTextbox = (canvas) => {
