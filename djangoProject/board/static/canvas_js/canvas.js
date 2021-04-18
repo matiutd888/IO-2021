@@ -147,9 +147,18 @@ const setPanEvents = (canvas) => {
             canvas.renderAll()
         } else if (currentMode === modes.erase) {
             console.log("Clicked during erase mode!")
-            // canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
+            canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
             // canvas.requestRenderAll()                   // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
             // najeżdżania. Może więc warto to usunąć
+        } else if (currentMode === modes.rectangle) {
+            console.log("Create rectangle!")
+            createRect(canvas, event.e.offsetX, event.e.offsetY)
+        } else if (currentMode === modes.circle) {
+            console.log("Create circle!")
+            createCirc(canvas, event.e.offsetX, event.e.offsetY)
+        } else if (currentMode === modes.text) {
+            console.log("Create textbox!")
+            createTextbox(canvas, event.e.offsetX, event.e.offsetY)
         }
     })
     canvas.on('mouse:up', (event) => {
@@ -165,9 +174,7 @@ const setPanEvents = (canvas) => {
         zoom *= 0.97 ** delta;
         if (zoom > 20) zoom = 20;
         if (zoom < 0.01) zoom = 0.01;
-        //canvas.setZoom(zoom);
         canvas.zoomToPoint({ x: event.e.offsetX, y: event.e.offsetY }, zoom);
-        //canvas.zoomToPoint({ x: 100, y: 100 }, zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
     })
@@ -209,16 +216,29 @@ const restoreCanvas = (canvas, state, bgUrl) => {
     }
 }
 
+const changeRectMode = () => {
+    currentMode = modes.rectangle
+}
 
-const createRect = (canvas) => {
+const changeCircMode = () => {
+    currentMode = modes.circle
+}
+
+const changeTextMode = () => {
+    currentMode = modes.text
+}
+
+const createRect = (canvas, left = 100, top = 100) => {
     console.log("rect")
     const canvCenter = canvas.getCenter()
     rect = new fabric.Rect({
         width: 100,
         height: 100,
         fill: 'green',
-        left: canvCenter.left,
-        top: canvCenter.top,
+        //left: canvCenter.left,
+        left: left,
+        // top: canvCenter.top,
+        top: top,
         originX: 'center',
         originY: 'center',
         cornerColor: 'white'
@@ -239,14 +259,16 @@ const createRect = (canvas) => {
     // canvas.renderAll();
 }
 
-const createCirc = (canvas) => {
+const createCirc = (canvas, left = 100, top = 100) => {
     console.log("circ")
     const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
-        left: canvCenter.left,
-        top: canvCenter.top,
+	    //left: canvCenter.left,
+        left: left,
+        // top: canvCenter.top,
+        top: top,
         originX: 'center',
         originY: 'center',
         cornerColor: 'white'
@@ -263,23 +285,25 @@ const createCirc = (canvas) => {
     })
 }
 
-const createTextbox = (canvas) => {
+const createTextbox = (canvas, left = 100, top = 100) => {
     console.log("text")
+    currentMode = ''
     const canvCenter = canvas.getCenter()
     textbox = new fabric.Textbox('Type here', {
-	left: canvCenter.left,
-	top: canvCenter.top,
-	width: 100,
-	height: 100,
-	originX: 'center',
-	originY: 'center',
-	fill: '#000000'
+        //left: canvCenter.left,
+        left: left,
+        // top: canvCenter.top,
+        top: top,
+        width: 100,
+        height: 100,
+        originX: 'center',
+        originY: 'center',
+        fill: '#000000'
     })
     canvas.add(textbox)
     canvas.renderAll()
 }
-	
-	
+
 
 const groupObjects = (canvas, group, shouldGroup) => {
     if (shouldGroup) {
@@ -335,7 +359,10 @@ const modes = {
     pan: 'pan',
     drawing: 'drawing',
     move: 'move',
-    erase: 'erase'
+    erase: 'erase',
+    text: 'text',
+    rectangle: 'rectangle',
+    circle: 'circle'
 }
 toggleMode(modes.move) // default mode
 
