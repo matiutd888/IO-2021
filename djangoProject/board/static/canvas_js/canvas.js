@@ -165,7 +165,9 @@ const setPanEvents = (canvas) => {
         zoom *= 0.97 ** delta;
         if (zoom > 20) zoom = 20;
         if (zoom < 0.01) zoom = 0.01;
-        canvas.setZoom(zoom);
+        //canvas.setZoom(zoom);
+        canvas.zoomToPoint({ x: event.e.offsetX, y: event.e.offsetY }, zoom);
+        //canvas.zoomToPoint({ x: 100, y: 100 }, zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
     })
