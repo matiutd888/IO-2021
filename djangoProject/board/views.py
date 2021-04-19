@@ -1,11 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DetailView, ListView, DeleteView
 from .models import Board
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import  messages
 from django.http import JsonResponse
-
 
 # Create your views here.
 
@@ -45,6 +44,19 @@ class BoardCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.admin_user_b = self.request.user
         return super().form_valid(form)
+
+class BoardDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Board
+    success_url = '/profile/'
+
+    def test_func(self):
+        board = self.get_object()
+
+        if self.request.user == board.admin_user_b:
+            return True
+
+        return False
+
 
 def save_canvas(request):
     str_canvas = request.POST['canvas_']
