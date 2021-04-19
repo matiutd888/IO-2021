@@ -152,13 +152,16 @@ const setPanEvents = (canvas) => {
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
-            createRect(canvas, event.e.offsetX, event.e.offsetY)
+            var pointer = canvas.getPointer(event.e);
+            createRect(canvas, pointer.x, pointer.y)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
-            createCirc(canvas, event.e.offsetX, event.e.offsetY)
+            var pointer = canvas.getPointer(event.e);
+            createCirc(canvas, pointer.x, pointer.y)
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
-            createTextbox(canvas, event.e.offsetX, event.e.offsetY)
+            var pointer = canvas.getPointer(event.e);
+            createTextbox(canvas, pointer.x, pointer.y)
         }
     })
     canvas.on('mouse:up', (event) => {
