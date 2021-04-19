@@ -8,27 +8,35 @@ document.body.onmouseup = function () {
 }
 
 const initCanvas = (id) => {
-    var w = document.documentElement.clientWidth;
-    var h = document.documentElement.clientHeight;
+    var sizes = document.getElementById('canvas-content');
+
+    var w = sizes.clientWidth;
+    var h = sizes.offsetHeight;
+
+
+    console.log("Expected width " + w + " Expected height " + h);
     return new fabric.Canvas(id, {
         width: w,
-        height: h - 150,
+        height: h,
         selection: false
     });
-
 }
 
 setCanvasSize = () => {
-    var w = document.documentElement.clientWidth;
-    var h = document.documentElement.offsetHeight;
+    var sizes = document.getElementById('canvas-content');
+
+    var w = sizes.clientWidth;
+    var h = sizes.clientHeight;
+
     canvas.setDimensions({
         width: w,
-        height: h - 150
+        height: h,
     });
+
     canvas.renderAll();
+
     console.log("Expected width " + w + " Expected height " + h);
 }
-
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
