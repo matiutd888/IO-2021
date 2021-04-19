@@ -233,6 +233,7 @@ const changeTextMode = () => {
 
 const createRect = (canvas, left = 100, top = 100) => {
     console.log("rect")
+    currentMode = ''
     const canvCenter = canvas.getCenter()
     rect = new fabric.Rect({
         width: 100,
@@ -264,6 +265,7 @@ const createRect = (canvas, left = 100, top = 100) => {
 
 const createCirc = (canvas, left = 100, top = 100) => {
     console.log("circ")
+    currentMode = ''
     const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
         radius: 50,
