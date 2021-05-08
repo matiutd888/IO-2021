@@ -1,7 +1,6 @@
 const boardPK = JSON.parse(document.getElementById('board-pk').textContent);
 const username = JSON.parse(document.getElementById("username").textContent);
 
-
 console.log("boardPK = " + boardPK)
 console.log("username = " + username)
 
@@ -471,6 +470,9 @@ function redo() {
 }
 
 function getObjectFromId(ctx, id) {
+    console.log("getObjectsFromID" + id)
+    console.log("ctx.getObjects")
+    console.log(ctx.getObjects())
     var currentObjects = ctx.getObjects();
     for (var i = currentObjects.length - 1; i >= 0; i--) {
         if (currentObjects[i].id === id)
@@ -506,10 +508,33 @@ const eventTypes = {
     modified: 'object-modified',
 }
 
+// Make the function wait until the connection is made...
+function waitForSocketConnection(socket, callback) {
+    setTimeout(
+        function () {
+            if (socket.readyState === 1) {
+                console.log("Connection is made")
+                if (callback != null) {
+                    callback();
+                }
+            } else {
+                console.log("wait for connection...")
+                waitForSocketConnection(socket, callback);
+            }
+
+        }, 5); // wait 5 milisecond for the connection...
+}
+
+function sendMsg(msg) {
+    waitForSocketConnection(boardSocket, () => {
+        boardSocket.send(msg)
+    })
+}
+
 function sendObjectToGroup(obj, type) {
     console.log("sendObjectToGroup: " + type + " obj: " + obj)
     console.log(obj)
-    boardSocket.send(JSON.stringify({
+    sendMsg(JSON.stringify({
         'data_json': obj,
         'data_type': type,
     }))
@@ -517,32 +542,36 @@ function sendObjectToGroup(obj, type) {
 
 
 canvas.on("object:added", (e) => {
+    console.log("OBJECT ADDED: ", e.target)
     if (e.target) {
         var obj = e.target
         obj.set('removed', false) // Nie jest usunięty
+        obj.toJSON = (function (toJSON) {
+            return function () {
+                return fabric.util.object.extend(toJSON.call(this), {
+                    id: this.id,
+                    removed: this.removed,
+                });
+            };
+        })(obj.toJSON);
+
         if (!obj.id) {
             // Object was created by us
             obj.set('id', Date.now() + '-' + username);
-            obj.toJSON = (function (toJSON) {
-                return function () {
-                    return fabric.util.object.extend(toJSON.call(this), {
-                        id: this.id,
-                    });
-                };
-            })(obj.toJSON);
             sendObjectToGroup(obj, eventTypes.added)
         }
-    // IMPLEMENTACJA CTRL Z
-        //  console.log("object added id = " + obj.id)
-        // if (should_push) {
-        //     if (!is_redoing) {
-        //         redo_stack = []
-        //     }
-        //     is_redoing = false
-        //     undo_stack.push(new AddCommand(obj))
-        // }
     }
-});
+    // IMPLEMENTACJA CTRL Z
+    //  console.log("object added id = " + obj.id)
+    // if (should_push) {
+    //     if (!is_redoing) {
+    //         redo_stack = []
+    //     }
+    //     is_redoing = false
+    //     undo_stack.push(new AddCommand(obj))
+    // }
+})
+;
 
 canvas.on("object:modified", (e) => {
     console.log("object modified id = " + e.target.__uid)
@@ -566,15 +595,6 @@ canvas.on("object:removed", e => {
             return; //Object already removed
 
         obj.set('removed', true);
-        obj.toJSON = (function (toJSON) {
-            return function () {
-                return fabric.util.object.extend(toJSON.call(this), {
-                    id: this.id,
-                    uid: this.uid,
-                    removed: this.removed
-                });
-            };
-        })(obj.toJSON);
 
         sendObjectToGroup(obj, eventTypes.removed);
     }

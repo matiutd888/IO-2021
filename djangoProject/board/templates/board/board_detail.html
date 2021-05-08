@@ -83,7 +83,8 @@
             <canvas id="canvas"></canvas>
         </div>
         {{ object.pk|json_script:"board-pk" }}
-        {{ request.user.username|json_script:"username"  }}
+        {{ request.user.username|json_script:"username" }}
+
         {% if object.board_string == '' %}
             <script>
                 var data = '';
@@ -120,9 +121,12 @@
         }
 
         function loadCanvas() {
+            waitForSocketConnection(boardSocket, () => {
+                console.log("callback!")
+            })
+            console.log("load canvas!")
             if (data !== '') {
                 canvas.loadFromJSON(data);
-
                 canvas.renderAll();
             }
         }
