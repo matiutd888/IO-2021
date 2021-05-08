@@ -6,6 +6,7 @@ from board.views import (
     canvas,
     BoardCreateView,
     BoardDetailView,
+    BoardDeleteView,
     UserBoardsView,
     save_canvas,
     use_invite,
@@ -29,4 +30,7 @@ urlpatterns = [
     path('board/<int:pk>/settings', disp_board_settings, name='board_settings'),
     path('board/<int:b_pk>/kick', kick_user, name='kick_user'),
     url('', disp_profiles),
+    path('board/<int:pk>/delete/', BoardDeleteView.as_view(), name='board-delete'),
+    url('board/update/', save_canvas, name='save_canvas'),
+    url('', disp_profiles, name='disp-boards'),
 ]
