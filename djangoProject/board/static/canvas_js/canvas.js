@@ -14,24 +14,24 @@ const boardSocket = new WebSocket(
 );
 
 
-const emitAdd = (obj) => {
-    console.log("emitAdd: Sending obj ")
-    console.log(obj)
-    // we include the name of the event we're emitting, and a data object
-    boardSocket.send(JSON.stringify({
-        'data_json': obj,
-        'data_type': 'object-added'
-    }))
-}
-const emitModify = (obj) => {
-    console.log("emitModify: Sending obj ")
-    console.log(obj)
-    // we include the name of the event we're emitting, and a data object
-    boardSocket.send(JSON.stringify({
-        'data_json': obj,
-        'data_type': 'object-modified'
-    }))
-}
+// const emitAdd = (obj) => {
+//     console.log("emitAdd: Sending obj ")
+//     console.log(obj)
+//     // we include the name of the event we're emitting, and a data object
+//     boardSocket.send(JSON.stringify({
+//         'data_json': obj,
+//         'data_type': 'object-added'
+//     }))
+// }
+// const emitModify = (obj) => {
+//     console.log("emitModify: Sending obj ")
+//     console.log(obj)
+//     // we include the name of the event we're emitting, and a data object
+//     boardSocket.send(JSON.stringify({
+//         'data_json': obj,
+//         'data_type': 'object-modified'
+//     }))
+// }
 
 // Ogarnianie websocketów.
 
@@ -470,7 +470,6 @@ function redo() {
     op.execute(canvas)
 }
 
-
 function getObjectFromId(ctx, id) {
     var currentObjects = ctx.getObjects();
     for (var i = currentObjects.length - 1; i >= 0; i--) {
@@ -487,6 +486,7 @@ function Board_OnSync(_canvas, obj) {
     if (obj.removed) {
         if (existing) {
             _canvas.remove(existing);
+            _canvas.renderAll();
         }
         return;
     }
@@ -494,6 +494,7 @@ function Board_OnSync(_canvas, obj) {
     if (existing) {
         existing.set(obj);
     } else {
+        // _canvas.add(obj.fromJSON())
         enliven(_canvas, obj)
     }
     _canvas.renderAll();
