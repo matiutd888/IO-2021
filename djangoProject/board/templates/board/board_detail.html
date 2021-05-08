@@ -83,6 +83,7 @@
             <canvas id="canvas"></canvas>
         </div>
         {{ object.pk|json_script:"board-pk" }}
+        {{ request.user.username|json_script:"username"  }}
         {% if object.board_string == '' %}
             <script>
                 var data = '';

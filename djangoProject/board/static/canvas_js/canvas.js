@@ -1,6 +1,41 @@
+const boardPK = JSON.parse(document.getElementById('board-pk').textContent);
+const username = JSON.parse(document.getElementById("username").textContent);
 
+
+console.log("boardPK = " + boardPK)
+console.log("username = " + username)
+
+const boardSocket = new WebSocket(
+    'ws://'
+    + window.location.host
+    + '/ws/board/'
+    + boardPK
+    + '/'
+);
+
+
+const emitAdd = (obj) => {
+    console.log("emitAdd: Sending obj ")
+    console.log(obj)
+    // we include the name of the event we're emitting, and a data object
+    boardSocket.send(JSON.stringify({
+        'data_json': obj,
+        'data_type': 'object-added'
+    }))
+}
+const emitModify = (obj) => {
+    console.log("emitModify: Sending obj ")
+    console.log(obj)
+    // we include the name of the event we're emitting, and a data object
+    boardSocket.send(JSON.stringify({
+        'data_json': obj,
+        'data_type': 'object-modified'
+    }))
+}
 
 // Ogarnianie websocketów.
+
+
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
@@ -24,7 +59,7 @@ const initCanvas = (id) => {
     });
 }
 
-setCanvasSize = () => {
+const setCanvasSize = () => {
     var sizes = document.getElementById('canvas-content');
 
     var w = sizes.clientWidth;
@@ -166,8 +201,10 @@ const setPanEvents = (canvas) => {
             canvas.renderAll()
         } else if (currentMode === modes.erase) {
             console.log("Clicked during erase mode!")
-            canvas.remove(event.target) // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
-            // canvas.requestRenderAll()                   // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
+            canvas.remove(event.target)
+            // TODO ogólnie to ta linijka sprawia, że po kliknięciu na obiekt jest usuwany.
+            // canvas.requestRenderAll()
+            // Jest to fajna opcja ale nie umiem zrobić tak, by kursor nie był typu 'change size' podczas
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
@@ -238,6 +275,7 @@ const restoreCanvas = (canvas, state, bgUrl) => {
     }
 }
 
+
 const changeRectMode = () => {
     currentMode = modes.rectangle
 }
@@ -252,7 +290,7 @@ const changeTextMode = () => {
 
 const createRect = (canvas, left = 100, top = 100) => {
     console.log("rect")
-    currentMode = ''
+
     const canvCenter = canvas.getCenter()
     rect = new fabric.Rect({
         width: 100,
@@ -268,11 +306,11 @@ const createRect = (canvas, left = 100, top = 100) => {
     })
     canvas.add(rect)
     canvas.renderAll()
+    toggleMode(modes.move)
 }
 
 const createCirc = (canvas, left = 100, top = 100) => {
     console.log("circ")
-    currentMode = ''
     const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
         radius: 50,
@@ -287,11 +325,11 @@ const createCirc = (canvas, left = 100, top = 100) => {
     })
     canvas.add(circle)
     canvas.renderAll()
+    toggleMode(modes.move)
 }
 
 const createTextbox = (canvas, left = 100, top = 100) => {
     console.log("text")
-    currentMode = ''
     const canvCenter = canvas.getCenter()
     textbox = new fabric.Textbox('Type here', {
         //left: canvCenter.left,
@@ -306,6 +344,7 @@ const createTextbox = (canvas, left = 100, top = 100) => {
     })
     canvas.add(textbox)
     canvas.renderAll()
+    toggleMode(modes.move)
 }
 
 
@@ -350,24 +389,6 @@ document.addEventListener('keydown', function (e) {
 
 
 const canvas = initCanvas('canvas')
-
-const boardPK = JSON.parse(document.getElementById('board-pk').textContent);
-
-console.log("boardPK = " + boardPK)
-
-const boardSocket = new WebSocket(
-    'ws://'
-    + window.location.host
-    + '/ws/board/'
-    + boardPK
-    + '/'
-);
-
-boardSocket.onmessage = function (e) {
-    const data = JSON.parse(e.data);
-    console.log("On message called!")
-}
-
 
 const JSONState = {}
 let mousePressed = false
@@ -426,8 +447,8 @@ class AddCommand {
 
 var undo_stack = []
 var redo_stack = []
-is_redoing = false
-should_push = true
+var is_redoing = false
+var should_push = true
 
 function undo() {
     if (undo_stack.length === 0)
@@ -450,32 +471,112 @@ function redo() {
 }
 
 
-canvas.on("object:added", (e) => {
-    if (should_push) {
-        if (!is_redoing) {
-            redo_stack = []
+function getObjectFromId(ctx, id) {
+    var currentObjects = ctx.getObjects();
+    for (var i = currentObjects.length - 1; i >= 0; i--) {
+        if (currentObjects[i].id === id)
+            return currentObjects[i]
+    }
+    return null
+}
+
+function Board_OnSync(_canvas, obj) {
+    var existing = getObjectFromId(_canvas, obj.id);
+    console.log("Board on Sync: " + existing);
+
+    if (obj.removed) {
+        if (existing) {
+            _canvas.remove(existing);
         }
-        is_redoing = false
-        undo_stack.push(new AddCommand(e.target))
+        return;
     }
 
+    if (existing) {
+        existing.set(obj);
+    } else {
+        enliven(_canvas, obj)
+    }
+    _canvas.renderAll();
+}
+
+const eventTypes = {
+    added: 'object-added',
+    removed: 'object-removed',
+    modified: 'object-modified',
+}
+
+function sendObjectToGroup(obj, type) {
+    console.log("sendObjectToGroup: " + type + " obj: " + obj)
+    console.log(obj)
+    boardSocket.send(JSON.stringify({
+        'data_json': obj,
+        'data_type': type,
+    }))
+}
+
+
+canvas.on("object:added", (e) => {
+    if (e.target) {
+        var obj = e.target
+        obj.set('removed', false) // Nie jest usunięty
+        if (!obj.id) {
+            // Object was created by us
+            obj.set('id', Date.now() + '-' + username);
+            obj.toJSON = (function (toJSON) {
+                return function () {
+                    return fabric.util.object.extend(toJSON.call(this), {
+                        id: this.id,
+                    });
+                };
+            })(obj.toJSON);
+            sendObjectToGroup(obj, eventTypes.added)
+        }
+    // IMPLEMENTACJA CTRL Z
+        //  console.log("object added id = " + obj.id)
+        // if (should_push) {
+        //     if (!is_redoing) {
+        //         redo_stack = []
+        //     }
+        //     is_redoing = false
+        //     undo_stack.push(new AddCommand(obj))
+        // }
+    }
 });
 
 canvas.on("object:modified", (e) => {
+    console.log("object modified id = " + e.target.__uid)
     var object = e.target
     object.saveState()
     console.log(e.target)
 })
 
 canvas.on("object:removed", e => {
-    if (should_push) {
-        if (!is_redoing) {
-            redo_stack = []
-        }
-        is_redoing = false
-        undo_stack.push(new EraseCommand(e.target))
-    }
+    // !!! NIE USUWAĆ IMPLEMENTACJA CTRL Z
+    // if (should_push) {
+    //     if (!is_redoing) {
+    //         redo_stack = []
+    //     }
+    //     is_redoing = false
+    //     undo_stack.push(new EraseCommand(e.target))
+    // }
+    if (e.target) {
+        var obj = e.target;
+        if (obj.removed)
+            return; //Object already removed
 
+        obj.set('removed', true);
+        obj.toJSON = (function (toJSON) {
+            return function () {
+                return fabric.util.object.extend(toJSON.call(this), {
+                    id: this.id,
+                    uid: this.uid,
+                    removed: this.removed
+                });
+            };
+        })(obj.toJSON);
+
+        sendObjectToGroup(obj, eventTypes.removed);
+    }
 })
 
 setColorListener()
@@ -491,6 +592,27 @@ reader.addEventListener("load", () => {
     fabric.Image.fromURL(reader.result, img => {
         canvas.add(img)
         canvas.requestRenderAll()
-
     })
 })
+
+function enliven(_canvas, obj) {
+    fabric.util.enlivenObjects([obj], function (objects) {
+        var origRenderOnAddRemove = _canvas.renderOnAddRemove;
+        _canvas.renderOnAddRemove = false;
+
+        objects.forEach(function (o) {
+            _canvas.add(o);
+        });
+
+        _canvas.renderOnAddRemove = origRenderOnAddRemove;
+        _canvas.renderAll();
+    });
+}
+
+boardSocket.onmessage = function (e) {
+    const event = JSON.parse(e.data);
+    const type = event.data_type
+    const data_json = JSON.parse(event.data_json)
+    console.log("on message " + type + " " + data_json)
+    Board_OnSync(canvas, data_json)
+}
