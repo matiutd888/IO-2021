@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import CreateView, DetailView, ListView, DeleteView
-from .models import Board
+from .models import Board, User
+from .invite import handle_invite
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib import  messages
-from django.http import JsonResponse
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponse
+from django import forms
 
 # Create your views here.
 
@@ -20,6 +22,23 @@ def about(request):
 def canvas(request):
     return render(request, 'canvas.html')
 
+@login_required
+def disp_board_settings(request, pk):
+    try:
+        b = Board.objects.get(pk=pk)
+    except:
+       messages.error("Board not found!", request)
+
+       return disp_profiles(request)
+
+    if request.user != b.admin_user_b:
+        messages.error("You don't have permissions to edit this board settings!", request)
+
+        return disp_profiles(request)
+
+    return render(request, 'board/board_settings.html', context={'board': b})
+
+
 class UserBoardsView(ListView):
     model = Board
     template_name = 'profile.html'
@@ -28,14 +47,29 @@ class UserBoardsView(ListView):
     def get_queryset(self):
         return Board.objects.filter(admin_user_b=self.request.user)
 
+def dispBoard(request, pk):
+    b = Board.objects.get(pk=pk)
+
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if (not request.user == b.admin_user_b) and (not request.user in b.guests_b.all()):
+        messages.error(request, "You don't have permissions to acces this board, please contact with the owner.")
+        return redirect('disp_profile')
+
+    return render(request, 'board/board_detail.html', context={'object': b})
+
 class BoardDetailView(DetailView, UserPassesTestMixin):
     model = Board
 
     def test_func(self):
         board = self.get_object()
+        print(board.admin_user_b + "<<<")
+        print(self.request.user + ">>>>>")
         if self.request.user == board.admin_user_b:
             return True
         return False
+
 
 class BoardCreateView(LoginRequiredMixin, CreateView):
     model = Board
@@ -44,6 +78,7 @@ class BoardCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.admin_user_b = self.request.user
         return super().form_valid(form)
+
 
 class BoardDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Board
@@ -56,7 +91,6 @@ class BoardDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
 
         return False
-
 
 def save_canvas(request):
     str_canvas = request.POST['canvas_']
@@ -73,3 +107,79 @@ def save_canvas(request):
     data_text = 'Reply'
 
     return JsonResponse({'data': data_text})
+
+
+def use_invite(request, g_code=""):
+    if request.user.is_authenticated:
+        if g_code != "":
+            board = handle_invite(g_code)
+        elif request.method == "POST":
+            board = handle_invite(request.POST.get('bc', ""))
+        else:
+            board = -1
+
+        if board == -1:
+            messages.error(request, 'Invalid invitation code. Please try again.')
+        else:
+            b = Board.objects.get(pk=board)
+            if request.user in b.guests_b.all():
+                messages.warning(request, 'You\'ve already joined the board!')
+            elif request.user == b.admin_user_b:
+                messages.warning(request, 'You are the owner of this board!')
+            else:
+                b.guests_b.add(request.user)
+                messages.success(request, "You've been successfully added to the board.")
+
+        return redirect('disp_profile')
+    else:
+        return redirect('login')
+
+
+def gen_invite(request, pk):
+    if request.method == "POST":
+        number = request.POST.get("number", 999)
+    else:
+        number = 999
+
+    invite_code = Board.objects.get(pk=pk).create_link
+    invite_code.usage = number
+    invite_code.save()
+
+    print(invite_code.usage)
+
+    response = invite_code.code + "_" + str(pk)
+
+    return HttpResponse(response)
+
+def del_invite(request, pk):
+    b = Board.objects.get(pk=pk)
+
+    b.invite_codes.all().delete()
+
+    messages.success(request, "Links are now deactivated.")
+
+    return redirect('board_settings', pk)
+
+def kick_user(request, b_pk):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == "POST":
+        b = Board.objects.get(pk=b_pk)
+        u_pk = int(request.POST.get('user_id', ""))
+
+        print(u_pk)
+
+        user = User.objects.get(pk=u_pk)
+
+        if request.user == b.admin_user_b and user != b.admin_user_b:
+            b.guests_b.remove(user)
+            messages.success(request, "User was kicked succesfully!")
+
+            return redirect('board_settings', b_pk)
+
+    messages.error(request, "Something went wrong...")
+
+    return redirect('disp_profile')
+
+
