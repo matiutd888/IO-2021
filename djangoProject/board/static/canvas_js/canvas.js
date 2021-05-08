@@ -1,4 +1,6 @@
 
+
+// Ogarnianie websocketów.
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
@@ -51,8 +53,8 @@ const lockObject = (object, option) => {
     object.hasBorders = object.hasControls = !option;
 }
 
-const lockAddedObjectListener =  (e) => {
-        lockObject(e.target, true);
+const lockAddedObjectListener = (e) => {
+    lockObject(e.target, true);
 }
 const lockAllObjects = (option) => {
     canvas.getObjects().forEach(object => {
@@ -194,7 +196,7 @@ const setPanEvents = (canvas) => {
         zoom *= 0.97 ** delta;
         if (zoom > 20) zoom = 20;
         if (zoom < 0.01) zoom = 0.01;
-        canvas.zoomToPoint({ x: event.e.offsetX, y: event.e.offsetY }, zoom);
+        canvas.zoomToPoint({x: event.e.offsetX, y: event.e.offsetY}, zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
     })
@@ -275,7 +277,7 @@ const createCirc = (canvas, left = 100, top = 100) => {
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
-	    //left: canvCenter.left,
+        //left: canvCenter.left,
         left: left,
         // top: canvCenter.top,
         top: top,
@@ -349,6 +351,24 @@ document.addEventListener('keydown', function (e) {
 
 const canvas = initCanvas('canvas')
 
+const boardPK = JSON.parse(document.getElementById('board-pk').textContent);
+
+console.log("boardPK = " + boardPK)
+
+const boardSocket = new WebSocket(
+    'ws://'
+    + window.location.host
+    + '/ws/board/'
+    + boardPK
+    + '/'
+);
+
+boardSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    console.log("On message called!")
+}
+
+
 const JSONState = {}
 let mousePressed = false
 let color = '#000000'
@@ -375,6 +395,7 @@ class EraseCommand {
         this.target = target
         this.type = operationTypes.remove
     }
+
     undo(canvas) {
         canvas.add(this.target)
         canvas.requestRenderAll()
@@ -391,6 +412,7 @@ class AddCommand {
         this.target = target
         this.type = operationTypes.add
     }
+
     undo(canvas) {
         canvas.remove(this.target)
         canvas.requestRenderAll()
@@ -406,6 +428,7 @@ var undo_stack = []
 var redo_stack = []
 is_redoing = false
 should_push = true
+
 function undo() {
     if (undo_stack.length === 0)
         return
@@ -418,7 +441,7 @@ function undo() {
 }
 
 function redo() {
-   is_redoing = true
+    is_redoing = true
     if (redo_stack.length === 0)
         return
     const op = redo_stack.pop();
@@ -430,9 +453,9 @@ function redo() {
 canvas.on("object:added", (e) => {
     if (should_push) {
         if (!is_redoing) {
-        redo_stack = []
-    }
-    is_redoing = false
+            redo_stack = []
+        }
+        is_redoing = false
         undo_stack.push(new AddCommand(e.target))
     }
 
@@ -447,8 +470,8 @@ canvas.on("object:modified", (e) => {
 canvas.on("object:removed", e => {
     if (should_push) {
         if (!is_redoing) {
-        redo_stack = []
-      }
+            redo_stack = []
+        }
         is_redoing = false
         undo_stack.push(new EraseCommand(e.target))
     }
