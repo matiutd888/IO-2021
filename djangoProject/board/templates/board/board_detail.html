@@ -109,7 +109,7 @@
 
         function saveCanvas() {
             console.log("SAVE_CANVAS_RUN");
-            var json = JSON.stringify(canvas.toJSON());
+            var json = JSON.stringify(canvas.toJSON(propertiesToInclude));
             console.log(json);
             $.post('{% url 'save_canvas' %}', {
                 canvas_: json,

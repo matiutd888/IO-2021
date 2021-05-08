@@ -260,7 +260,7 @@ const setBrushSizeListener = () => {
 }
 
 const clearCanvas = (canvas, state) => {
-    state.val = canvas.toJSON()
+    state.val = canvas.toJSON(propertiesToInclude)
     canvas.getObjects().forEach((o) => {
         if (o !== canvas.backgroundImage) {
             canvas.remove(o)
@@ -397,6 +397,15 @@ const bgUrl = 'https://cdn.pixabay.com/photo/2017/03/17/19/37/sky-2152463_960_72
 
 let currentMode;
 
+const propertiesToInclude = ['id', 'removed']
+
+const eventTypes = {
+    added: 'object-added',
+    removed: 'object-removed',
+    modified: 'object-modified',
+}
+
+
 const modes = {
     pan: 'pan',
     drawing: 'drawing',
@@ -502,12 +511,6 @@ function Board_OnSync(_canvas, obj) {
     _canvas.renderAll();
 }
 
-const eventTypes = {
-    added: 'object-added',
-    removed: 'object-removed',
-    modified: 'object-modified',
-}
-
 // Make the function wait until the connection is made...
 function waitForSocketConnection(socket, callback) {
     setTimeout(
@@ -548,6 +551,7 @@ canvas.on("object:added", (e) => {
         obj.set('removed', false) // Nie jest usunięty
         obj.toJSON = (function (toJSON) {
             return function () {
+                console.log("New to json called!")
                 return fabric.util.object.extend(toJSON.call(this), {
                     id: this.id,
                     removed: this.removed,
