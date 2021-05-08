@@ -72,7 +72,21 @@
                 <a href="{% url 'disp_profile' %}">
                     <li class="list-group-item list-group-item-light">My boards</li>
                 </a>
-                <li class="list-group-item list-group-item-light">Settings</li>
+                <li class="list-group-item list-group-item-light">
+                    <a data-toggle="collapse" data-target="#collapseBoard" aria-expanded="false" aria-controls="collapseBoard">
+                        Join another board
+                    </a>
+                    <div class="collapse" id="collapseBoard">
+                            <form method="post" action="{% url 'join' %}" class="px-4 py-3">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="bc"> Board code: </label>
+                                    <input type="text" class="form-control" name="bc" id="bc" placeholder="Enter code.">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Join!</button>
+                            </form>
+                    </div>
+                </li>
                 <li class="list-group-item list-group-item-light">Join premium now &#9734;</li>
               </ul>
             </p>

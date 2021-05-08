@@ -86,8 +86,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
         'NAME': '//labora.mimuw.edu.pl/LABS',
-        'USER': 'br418400',
-        'PASSWORD': 'b666582846975/',
+        'USER': 'mn418323',
+        'PASSWORD': 'pies123',
     }
 }
 

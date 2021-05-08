@@ -9,20 +9,61 @@
     <h3 class="article-title">
             Here are your boards...
         </h3>
-    <div class="content-section d-flex flex-wrap border-0">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#ownBoards">Owned boards</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#sharedBoards">Shared boards</a>
+        </li>
+    </ul>
 
-            {% for board in all_user_boards %}
-                <div class="card float-left m-2"  style="width: 18rem;">
-                <img class="card-img-top" src="{% static 'placeholder_board.jpg' %}" alt="Card image cap">
-                    <div class="card-body">
-                        <h5 class="card-title"> {{ board.title }} </h5>
-                        <small class="text-muted">{{ board.date_created|date:"F d, Y" }}</small>
+    <div class="tab-content">
+        <div class="tab-pane container active" id="ownBoards">
+            <div class="content-section d-flex flex-wrap border-0" id="ownBoards">
+                    <!---ITERATES OVER ALL BOARDS, THAT USER OWNS--->
+                    {% for board in all_user_boards %}
+                        <div class="card float-left m-2"  style="width: 18rem;">
+                            <img class="card-img-top" src="{% static 'placeholder_board.jpg' %}" alt="Card image cap">
+                            <!---SETTINGS BUTTON--->
+                            <div class="card-body">
+                                <div class="card-title d-flex align-content-between justify-content-between">
+                                <h5 class="card-title float-left"> {{ board.title }} </h5>
+                                    <a href="{% url 'board_settings' board.pk %}">
+                                    <!---SETTING ICON--->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"></path>
+                                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                                <small class="text-muted">{{ board.date_created|date:"F d, Y" }}</small>
 
-                        <a href="{% url 'board-detail' board.pk %}" class="btn btn-outline-primary">Select</a>
-                        <a href="#" class="btn btn-outline-warning">Delete</a>
-                    </div>
-                </div>
-            {% endfor %}
+                                <a href="{% url 'board-detail' board.pk %}" class="btn btn-outline-primary">Select</a>
+                                <a href="#" class="btn btn-outline-warning">Delete</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane container fade" id="sharedBoards">
+            <div class="content-section d-flex flex-wrap border-0 faded" id="sharedBoards">
+                    <!---ITERATES OVER ALL BOARDS, THAT USER IS INVITED TO--->
+                    {% for board in request.user.invited_users.all %}
+                        <div class="card float-left m-2"  style="width: 18rem;">
+                        <img class="card-img-top" src="{% static 'placeholder_board.jpg' %}" alt="Card image cap">
+                            <div class="card-body">
+                                <h5 class="card-title"> {{ board.title }} </h5>
+                                <small class="text-muted">{{ board.date_created|date:"F d, Y" }}</small>
+
+                                <a href="{% url 'board-detail' board.pk %}" class="btn btn-outline-primary">Select</a>
+                                <a href="#" class="btn btn-outline-warning">Delete</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+            </div>
+        </div>
     </div>
     </div>
 
