@@ -562,7 +562,7 @@ canvas.on("object:added", (e) => {
         if (!obj.id) {
             // Object was created by us
             obj.set('id', Date.now() + '-' + username);
-            sendObjectToGroup(obj, eventTypes.added)
+            sendObjectToGroup(obj, eventTypes.added);
         }
     }
     // IMPLEMENTACJA CTRL Z
@@ -577,11 +577,45 @@ canvas.on("object:added", (e) => {
 })
 ;
 
-canvas.on("object:modified", (e) => {
-    console.log("object modified id = " + e.target.__uid)
-    var object = e.target
-    object.saveState()
-    console.log(e.target)
+// canvas.on("object:modified", (e) => {
+//     console.log("object modified id = " + e.target.__uid)
+//     var object = e.target
+//     object.saveState()
+//     console.log(e.target)
+// })
+
+canvas.on("object:modified", e => {
+    if (e.target) {
+        console.log("itam")
+        var obj = e.target;
+        if (obj.removed) {
+            return;
+        }
+
+        obj.set('removed', true);
+        obj.toJSON = (function (toJSON) {
+            return function () {
+                return fabric.util.object.extend(toJSON.call(this), {
+                    id: this.id,
+                    uid: this.uid,
+                    removed: this.removed
+                });
+            };
+        })(obj.toJSON);
+
+        sendObjectToGroup(obj, eventTypes.removed);
+
+        obj.set('removed', false);
+        obj.set('id', Date.now() + '-' + username);
+        obj.toJSON = (function (toJSON) {
+            return function () {
+                return fabric.util.object.extend(toJSON.call(this), {
+                    id: this.id,
+                });
+            };
+        })(obj.toJSON);
+        sendObjectToGroup(obj, eventTypes.added);
+    }
 })
 
 canvas.on("object:removed", e => {
