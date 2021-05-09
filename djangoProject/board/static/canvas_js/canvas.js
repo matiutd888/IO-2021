@@ -346,6 +346,9 @@ document.addEventListener('keydown', function (e) {
     } else if (e.ctrlKey && e.key === 'y') {
         console.log("ctrl y pressed!\n")
         redo();
+    } else if (e.ctrlKey && e.key === 'v') {
+        console.log("ctrl v pressed!\n");
+        paste();
     }
 })
 
@@ -429,13 +432,17 @@ function redo() {
     op.execute(canvas)
 }
 
+function paste() {
+
+}
+
 
 canvas.on("object:added", (e) => {
     if (should_push) {
         if (!is_redoing) {
-        redo_stack = []
-    }
-    is_redoing = false
+            redo_stack = []
+        }
+        is_redoing = false
         undo_stack.push(new AddCommand(e.target))
     }
 
