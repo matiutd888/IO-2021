@@ -94,6 +94,8 @@
     <div class="canvas-content" id="canvas-content">
         <canvas id="canvas"></canvas>
     </div>
+    {{ object.pk|json_script:"board-pk" }}
+	{{ request.user.username|json_script:"username" }}
 
     {% if object.board_string == '' %}
         <script>
@@ -187,5 +189,36 @@
             alert("Link copied!");
         }
     }
+    =======
+	
+	        document.getElementById("saveBtn").addEventListener('click', saveCanvas);
+	
+	
+	        window.onload = loadCanvas();
+	
+	        function saveCanvas() {
+	            console.log("SAVE_CANVAS_RUN");
+	            var json = JSON.stringify(canvas.toJSON(propertiesToInclude));
+	            console.log(json);
+	            $.post('{% url 'save_canvas' %}', {
+	                canvas_: json,
+	                board_id: {{ object.pk }},
+	                csrfmiddlewaretoken: '{{ csrf_token }}'
+	            }, function (data) {
+	                console.log(data)
+	            });
+	        }
+	
+	        function loadCanvas() {
+	            waitForSocketConnection(boardSocket, () => {
+	                console.log("callback!")
+	            })
+	            console.log("load canvas!")
+	            if (data !== '') {
+	                canvas.loadFromJSON(data);
+	                canvas.renderAll();
+	            }
+	        }
+	>>>>>>> collaborative
     </script>
 {% endblock content %}
