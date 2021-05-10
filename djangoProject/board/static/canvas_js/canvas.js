@@ -226,6 +226,7 @@ const setPanEvents = (canvas) => {
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
+        console.log("scrollowanko");
         var delta = event.e.deltaY;
         delta /= 3 // Ta linijka zmniejsza tempo scrollowania
         var zoom = canvas.getZoom();
@@ -235,6 +236,7 @@ const setPanEvents = (canvas) => {
         canvas.zoomToPoint({x: event.e.offsetX, y: event.e.offsetY}, zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
+        canvas.renderAll();
     })
 }
 
@@ -543,6 +545,10 @@ function sendObjectToGroup(obj, type) {
     }))
 }
 
+function getUser(s) {
+    var n = s.indexOf("-");
+    return s.substring(n + 1);
+}
 
 canvas.on("object:added", (e) => {
     console.log("OBJECT ADDED: ", e.target)
@@ -567,7 +573,7 @@ canvas.on("object:added", (e) => {
     }
 //    IMPLEMENTACJA CTRL Z
      console.log("object added id = " + obj.id)
-    if (should_push) {
+    if (should_push && username.localeCompare(getUser(obj.id)) == 0) {
         if (!is_redoing) {
             redo_stack = []
         }
@@ -611,21 +617,25 @@ canvas.on("object:modified", e => {
 })
 
 canvas.on("object:removed", e => {
-    if (should_push) {
-        if (!is_redoing) {
-            redo_stack = []
-        }
-        is_redoing = false
-        undo_stack.push(new EraseCommand(e.target))
-    }
     if (e.target) {
         var obj = e.target;
+        console.log("witam witam");
+        if (should_push && username.localeCompare(getUser(obj.id)) == 0) {
+            console.log("siema siema");
+            if (!is_redoing) {
+                redo_stack = []
+            }
+            is_redoing = false
+            undo_stack.push(new EraseCommand(e.target))
+        }
+
         if (obj.removed)
             return; //Object already removed
 
         obj.set('removed', true);
 
         sendObjectToGroup(obj, eventTypes.removed);
+        obj.set('id', null);
     }
 })
 

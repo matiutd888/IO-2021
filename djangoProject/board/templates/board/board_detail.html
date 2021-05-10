@@ -114,7 +114,9 @@
     <script src="{% static 'canvas_js/canvas.js' %}"></script>
     <script>
     document.getElementById("saveBtn").addEventListener('click', saveCanvas);
-    document.getElementById("code_generate").addEventListener('click', generateInviteLink);
+    {% if request.user == object.admin_user_b %}
+        document.getElementById("code_generate").addEventListener('click', generateInviteLink);
+    {% endif %}
     window.onload = loadCanvas();
     var generate = true;
 
@@ -133,32 +135,35 @@
         }
     }
 
-    function generateInviteLink() {
-        if (generate) {
-            var number = document.getElementById("linkUsage").value;
+    {% if request.user == object.admin_user_b %}
+        function generateInviteLink() {
+            if (generate) {
+                var number = document.getElementById("linkUsage").value;
 
-            $.ajax({
-                type: 'POST',
-                url:'{% url 'gen_invite' object.pk %}',
-                data: {
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                    number: number
-                },
-                success: function callback(response) {
-                    let code = response;
+                $.ajax({
+                    type: 'POST',
+                    url:'{% url 'gen_invite' object.pk %}',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        number: number
+                    },
+                    success: function callback(response) {
+                        let code = response;
 
-                    document.getElementById('invite_code').innerHTML = code;
-                    document.getElementById('invite_link').innerHTML = '{{ request.get_host }}' + '{% url "join" %}' + code  ;
+                        document.getElementById('invite_code').innerHTML = code;
+                        document.getElementById('invite_link').innerHTML = '{{ request.get_host }}' + '{% url "join" %}' + code  ;
 
-                }
-            })
+                    }
+                })
+            }
+            else {
+                console.log("Skipping!");
+            }
+
+            generate = !generate;
         }
-        else {
-            console.log("Skipping!");
-        }
+    {% endif %}
 
-        generate = !generate;
-    }
 
     function copyCode(link) {
         let copyText;
@@ -192,7 +197,7 @@
 	
 	        document.getElementById("saveBtn").addEventListener('click', saveCanvas);
 	
-	
+            console.log("witam w mojej tablicy");
 	        window.onload = loadCanvas();
 	
 	        function saveCanvas() {
