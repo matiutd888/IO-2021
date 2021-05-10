@@ -565,24 +565,16 @@ canvas.on("object:added", (e) => {
             sendObjectToGroup(obj, eventTypes.added);
         }
     }
-    // IMPLEMENTACJA CTRL Z
-    //  console.log("object added id = " + obj.id)
-    // if (should_push) {
-    //     if (!is_redoing) {
-    //         redo_stack = []
-    //     }
-    //     is_redoing = false
-    //     undo_stack.push(new AddCommand(obj))
-    // }
+//    IMPLEMENTACJA CTRL Z
+     console.log("object added id = " + obj.id)
+    if (should_push) {
+        if (!is_redoing) {
+            redo_stack = []
+        }
+        is_redoing = false
+        undo_stack.push(new AddCommand(obj))
+    }
 })
-;
-
-// canvas.on("object:modified", (e) => {
-//     console.log("object modified id = " + e.target.__uid)
-//     var object = e.target
-//     object.saveState()
-//     console.log(e.target)
-// })
 
 canvas.on("object:modified", e => {
     if (e.target) {
@@ -619,14 +611,13 @@ canvas.on("object:modified", e => {
 })
 
 canvas.on("object:removed", e => {
-    // !!! NIE USUWAĆ IMPLEMENTACJA CTRL Z
-    // if (should_push) {
-    //     if (!is_redoing) {
-    //         redo_stack = []
-    //     }
-    //     is_redoing = false
-    //     undo_stack.push(new EraseCommand(e.target))
-    // }
+    if (should_push) {
+        if (!is_redoing) {
+            redo_stack = []
+        }
+        is_redoing = false
+        undo_stack.push(new EraseCommand(e.target))
+    }
     if (e.target) {
         var obj = e.target;
         if (obj.removed)
