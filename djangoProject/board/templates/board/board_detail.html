@@ -5,6 +5,7 @@
     <meta name = "viewport" content="width=device=width, initial-scale=1.0"/>
     <meta http-equiv="x-ua-compatible" content="ie=edge"/>
     <link rel="stylesheet" href="{% static 'canvas_js/style.css' %}"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.css" integrity="sha384-r/BYDnh2ViiCwqZt5VJVWuADDic3NnnTIEOv4hOh05nSfB6tjWpKmn1kUHOVkMXc" crossorigin="anonymous">
     <title>Canvas</title>
 
 {% endblock head_block %}
@@ -55,6 +56,9 @@
             <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)">Restore</button>
         </div>
         <div class = "d-flex float-left justify-content-sm-between">
+		<div id="export-button">
+			<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>
+		</div>
             <div class="dropdown float-left">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Additional
@@ -64,6 +68,7 @@
 		    <a class="dropdown-item" onclick="changeTextMode()">Textbox</a>
                     <a class="dropdown-item" onclick="changeRectMode()">Rectangle</a>
                     <a class="dropdown-item" onclick="changeCircMode()">Circle</a>
+		    <a class="dropdown-item" onclick="changeKatexMode()">KaTeX</a>
 <!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, true)">Group</a>-->
 <!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, false)">Ungroup</a>-->
                 </div>
@@ -109,9 +114,22 @@
 
     </div>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.js" integrity="sha384-zDIgORxjImEWftZXZpWLs2l57fMX9B3yWFPN5Ecabe211Hm5ZG/OIz2b07DYPUcH" crossorigin="anonymous"></script>
+    <script src="FileSaver.min.js"></script>
+    <script src="canvas-toBlob.js"></script>
     <script src="{% static 'canvas_js/fabric.min.js' %}"></script>
     <script src="{% static 'canvas_js/jscolor.js' %}"></script>
     <script src="{% static 'canvas_js/canvas.js' %}"></script>
+	<script>
+		function exportToPNG() {
+			let cur_domain = document.domain;
+			document.domain = "students.mimuw.edu.pl";
+			document.getElementById("canvas").toBlob(function(blob) {
+				saveAs(blob, "my_canvas.png");
+			});
+			document.domain = cur_domain;
+		}
+	</script>
     <script>
     document.getElementById("saveBtn").addEventListener('click', saveCanvas);
     {% if request.user == object.admin_user_b %}

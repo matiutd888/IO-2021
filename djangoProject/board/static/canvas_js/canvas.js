@@ -180,6 +180,10 @@ const toggleMode = (mode) => {
     }
 }
 
+class KatexTextbox extends fabric.Textbox {
+
+}
+
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
@@ -208,7 +212,7 @@ const setPanEvents = (canvas) => {
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
             var pointer = canvas.getPointer(event.e);
-            createRect(canvas, pointer.x, pointer.y)
+            createRect(canvas, pointer.x, pointer.dsay)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
             var pointer = canvas.getPointer(event.e);
@@ -217,7 +221,11 @@ const setPanEvents = (canvas) => {
             console.log("Create textbox!")
             var pointer = canvas.getPointer(event.e);
             createTextbox(canvas, pointer.x, pointer.y)
-        }
+        } else if (currentMode === modes.katex) {
+	    console.log("Create Katex!")
+	    var pointer = canvas.getPointer(event.e);
+	    createKatex(canvas, pointer.x, pointer.y) 
+	}
     })
     canvas.on('mouse:up', (event) => {
         mousePressed = false
@@ -289,6 +297,10 @@ const changeTextMode = () => {
     currentMode = modes.text
 }
 
+const changeKatexMode = () => {
+    currentMode = modes.katex
+}
+
 const createRect = (canvas, left = 100, top = 100) => {
     console.log("rect")
 
@@ -325,6 +337,23 @@ const createCirc = (canvas, left = 100, top = 100) => {
         cornerColor: 'white'
     })
     canvas.add(circle)
+    canvas.renderAll()
+    toggleMode(modes.move)
+}
+
+const createKatex = (canvas, left = 100, top = 100) => {
+    console.log("katex")
+    const canvCenter = canvas.getCenter()
+    katex = new	KatexTextbox('KaTeX textbox', {
+	    left: left,
+	    top: top,
+	    width: 100,
+	    height: 100,
+	    originX: 'center',
+	    originY: 'center',
+	    fill: '#000000'
+    })
+    canvas.add(katex)
     canvas.renderAll()
     toggleMode(modes.move)
 }
@@ -415,7 +444,8 @@ const modes = {
     erase: 'erase',
     text: 'text',
     rectangle: 'rectangle',
-    circle: 'circle'
+    circle: 'circle',
+    katex: 'katex'
 }
 toggleMode(modes.move) // default mode
 
@@ -459,7 +489,13 @@ var undo_stack = []
 var redo_stack = []
 var is_redoing = false
 var should_push = true
-
+/*
+function exportToPNG() {
+	document.getElementById("canvas").toBlob(function(blob) {
+		saveAs(blob, "my_canvas.png");
+	});
+}
+*/
 function undo() {
     if (undo_stack.length === 0)
         return
@@ -638,6 +674,18 @@ canvas.on("object:removed", e => {
         obj.set('id', null);
     }
 })
+
+canvas.on('text:changed', function(e) {
+	var obj = e.target;
+	if(obj instanceof KatexTextbox) {
+		console.log("KATEX TEXT CHANGED");
+	//	obj.set('text', katex.renderToString("c = \\pm\\sqrt{a^2 + b^2}", { displayMode: true }));
+	//	canvas.renderAll();
+	}
+	else {
+		console.log("NOT KATEXT TEXT CHANGED");
+	}
+});
 
 setColorListener()
 setBrushSizeListener()
