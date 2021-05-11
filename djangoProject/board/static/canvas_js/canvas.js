@@ -226,9 +226,9 @@ const setPanEvents = (canvas) => {
 	}
     })
     canvas.on('mouse:up', (event) => {
-        mousePressed = false
-        canvas.setCursor('default')
-        canvas.renderAll()
+        mousePressed = false;
+        canvas.setCursor('default');
+        canvas.renderAll();
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
@@ -250,9 +250,9 @@ const setPanEvents = (canvas) => {
 const setColorListener = () => {
     const picker = document.getElementById('colorPicker')
     picker.addEventListener('change', (event) => {
-        console.log("setColorListener " + event.target.value)
-        canvas.freeDrawingBrush.color = event.target.value
-        canvas.requestRenderAll()
+        console.log("setColorListener " + event.target.value);
+        canvas.freeDrawingBrush.color = event.target.value;
+        canvas.requestRenderAll();
     })
 }
 
@@ -321,8 +321,8 @@ const createRect = (canvas, left = pointer.x, top = pointer.y) => {
 }
 
 const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
-    console.log("circ")
-    const canvCenter = canvas.getCenter()
+    console.log("circ");
+    const canvCenter = canvas.getCenter();
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
@@ -340,8 +340,8 @@ const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
 }
 
 const createKatex = (canvas, left = 100, top = 100) => {
-    console.log("katex")
-    const canvCenter = canvas.getCenter()
+    console.log("katex");
+    const canvCenter = canvas.getCenter();
     katex = new	KatexTextbox('KaTeX textbox', {
 	    left: left,
 	    top: top,
