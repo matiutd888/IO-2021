@@ -414,7 +414,7 @@ document.addEventListener('keydown', function (e) {
         redo();
     }
 })
-/*
+
 document.addEventListener('paste', (event) => {
     var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
     console.log(JSON.stringify(items));
@@ -438,7 +438,7 @@ document.addEventListener('paste', (event) => {
     }
 
     event.preventDefault();
-});*/
+});
 
 const canvas = initCanvas('canvas')
 
