@@ -36,6 +36,7 @@ const boardSocket = new WebSocket(
 
 
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
+let pointer;        // Zmienna przechowująca aktualne współrzędne kursora
 document.body.onmousedown = function () {
     ++mouseDown;
 }
@@ -56,6 +57,7 @@ const initCanvas = (id) => {
         height: h,
         selection: false
     });
+
 }
 
 const setCanvasSize = () => {
@@ -73,6 +75,7 @@ const setCanvasSize = () => {
 
     console.log("Expected width " + w + " Expected height " + h);
 }
+
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
@@ -183,6 +186,7 @@ const toggleMode = (mode) => {
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
+        pointer = canvas.getPointer(event.e);
         if (mousePressed && currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
@@ -207,16 +211,13 @@ const setPanEvents = (canvas) => {
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
-            var pointer = canvas.getPointer(event.e);
-            createRect(canvas, pointer.x, pointer.y)
+            createRect(canvas)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
-            var pointer = canvas.getPointer(event.e);
-            createCirc(canvas, pointer.x, pointer.y)
+            createCirc(canvas)
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
-            var pointer = canvas.getPointer(event.e);
-            createTextbox(canvas, pointer.x, pointer.y)
+            createTextbox(canvas)
         }
     })
     canvas.on('mouse:up', (event) => {
@@ -287,7 +288,7 @@ const changeTextMode = () => {
     currentMode = modes.text
 }
 
-const createRect = (canvas, left = 100, top = 100) => {
+const createRect = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("rect")
 
     const canvCenter = canvas.getCenter()
@@ -308,15 +309,13 @@ const createRect = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createCirc = (canvas, left = 100, top = 100) => {
+const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("circ")
     const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
-        //left: canvCenter.left,
         left: left,
-        // top: canvCenter.top,
         top: top,
         originX: 'center',
         originY: 'center',
@@ -327,13 +326,11 @@ const createCirc = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createTextbox = (canvas, left = 100, top = 100) => {
+const createTextbox = (canvas, text = 'Type here', left = pointer.x, top = pointer.y) => {
     console.log("text")
     const canvCenter = canvas.getCenter()
-    textbox = new fabric.Textbox('Type here', {
-        //left: canvCenter.left,
+    textbox = new fabric.Textbox(text, {
         left: left,
-        // top: canvCenter.top,
         top: top,
         width: 100,
         height: 100,
@@ -385,6 +382,31 @@ document.addEventListener('keydown', function (e) {
         redo();
     }
 })
+
+document.addEventListener('paste', (event) => {
+    var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
+    console.log(JSON.stringify(items));
+    // find pasted image among pasted items
+    var blob = null;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") === 0) {
+            blob = items[i].getAsFile();
+        }
+    }
+    // load image if there is a pasted image
+    if (blob !== null) {
+        reader.onload = function(event) {
+            console.log(event.target.result); // data url!
+        };
+        reader.readAsDataURL(blob);
+    }
+    else {
+        let text = (event.clipboardData || window.clipboardData).getData(event.clipboardData.items[0].type);
+        createTextbox(canvas, text);
+    }
+
+    event.preventDefault();
+});
 
 
 const canvas = initCanvas('canvas')
