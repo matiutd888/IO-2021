@@ -34,9 +34,8 @@ const boardSocket = new WebSocket(
 
 // Ogarnianie websocketów.
 
-
-var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 let pointer;        // Zmienna przechowująca aktualne współrzędne kursora
+var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
 }
@@ -57,7 +56,6 @@ const initCanvas = (id) => {
         height: h,
         selection: false
     });
-
 }
 
 const setCanvasSize = () => {
@@ -75,7 +73,6 @@ const setCanvasSize = () => {
 
     console.log("Expected width " + w + " Expected height " + h);
 }
-
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
@@ -183,6 +180,10 @@ const toggleMode = (mode) => {
     }
 }
 
+class KatexTextbox extends fabric.Textbox {
+
+}
+
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
@@ -218,7 +219,11 @@ const setPanEvents = (canvas) => {
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
             createTextbox(canvas)
-        }
+        } else if (currentMode === modes.katex) {
+	    console.log("Create Katex!")
+	    var pointer = canvas.getPointer(event.e);
+	    createKatex(canvas, pointer.x, pointer.y)
+	}
     })
     canvas.on('mouse:up', (event) => {
         mousePressed = false
@@ -227,6 +232,7 @@ const setPanEvents = (canvas) => {
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
+        console.log("scrollowanko");
         var delta = event.e.deltaY;
         delta /= 3 // Ta linijka zmniejsza tempo scrollowania
         var zoom = canvas.getZoom();
@@ -236,6 +242,7 @@ const setPanEvents = (canvas) => {
         canvas.zoomToPoint({x: event.e.offsetX, y: event.e.offsetY}, zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
+        canvas.renderAll();
     })
 }
 
@@ -288,6 +295,10 @@ const changeTextMode = () => {
     currentMode = modes.text
 }
 
+const changeKatexMode = () => {
+    currentMode = modes.katex
+}
+
 const createRect = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("rect")
 
@@ -315,7 +326,9 @@ const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
+        //left: canvCenter.left,
         left: left,
+        // top: canvCenter.top,
         top: top,
         originX: 'center',
         originY: 'center',
@@ -326,11 +339,30 @@ const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
     toggleMode(modes.move)
 }
 
+const createKatex = (canvas, left = 100, top = 100) => {
+    console.log("katex")
+    const canvCenter = canvas.getCenter()
+    katex = new	KatexTextbox('KaTeX textbox', {
+	    left: left,
+	    top: top,
+	    width: 100,
+	    height: 100,
+	    originX: 'center',
+	    originY: 'center',
+	    fill: '#000000'
+    })
+    canvas.add(katex)
+    canvas.renderAll()
+    toggleMode(modes.move)
+}
+
 const createTextbox = (canvas, text = 'Type here', left = pointer.x, top = pointer.y) => {
     console.log("text")
     const canvCenter = canvas.getCenter()
     textbox = new fabric.Textbox(text, {
+        //left: canvCenter.left,
         left: left,
+        // top: canvCenter.top,
         top: top,
         width: 100,
         height: 100,
@@ -382,7 +414,7 @@ document.addEventListener('keydown', function (e) {
         redo();
     }
 })
-
+/*
 document.addEventListener('paste', (event) => {
     var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
     console.log(JSON.stringify(items));
@@ -406,8 +438,7 @@ document.addEventListener('paste', (event) => {
     }
 
     event.preventDefault();
-});
-
+});*/
 
 const canvas = initCanvas('canvas')
 
@@ -435,7 +466,8 @@ const modes = {
     erase: 'erase',
     text: 'text',
     rectangle: 'rectangle',
-    circle: 'circle'
+    circle: 'circle',
+    katex: 'katex'
 }
 toggleMode(modes.move) // default mode
 
@@ -479,7 +511,13 @@ var undo_stack = []
 var redo_stack = []
 var is_redoing = false
 var should_push = true
-
+/*
+function exportToPNG() {
+	document.getElementById("canvas").toBlob(function(blob) {
+		saveAs(blob, "my_canvas.png");
+	});
+}
+*/
 function undo() {
     if (undo_stack.length === 0)
         return
@@ -565,6 +603,10 @@ function sendObjectToGroup(obj, type) {
     }))
 }
 
+function getUser(s) {
+    var n = s.indexOf("-");
+    return s.substring(n + 1);
+}
 
 canvas.on("object:added", (e) => {
     console.log("OBJECT ADDED: ", e.target)
@@ -587,24 +629,16 @@ canvas.on("object:added", (e) => {
             sendObjectToGroup(obj, eventTypes.added);
         }
     }
-    // IMPLEMENTACJA CTRL Z
-    //  console.log("object added id = " + obj.id)
-    // if (should_push) {
-    //     if (!is_redoing) {
-    //         redo_stack = []
-    //     }
-    //     is_redoing = false
-    //     undo_stack.push(new AddCommand(obj))
-    // }
+//    IMPLEMENTACJA CTRL Z
+     console.log("object added id = " + obj.id)
+    if (should_push && username.localeCompare(getUser(obj.id)) == 0) {
+        if (!is_redoing) {
+            redo_stack = []
+        }
+        is_redoing = false
+        undo_stack.push(new AddCommand(obj))
+    }
 })
-;
-
-// canvas.on("object:modified", (e) => {
-//     console.log("object modified id = " + e.target.__uid)
-//     var object = e.target
-//     object.saveState()
-//     console.log(e.target)
-// })
 
 canvas.on("object:modified", e => {
     if (e.target) {
@@ -641,24 +675,39 @@ canvas.on("object:modified", e => {
 })
 
 canvas.on("object:removed", e => {
-    // !!! NIE USUWAĆ IMPLEMENTACJA CTRL Z
-    // if (should_push) {
-    //     if (!is_redoing) {
-    //         redo_stack = []
-    //     }
-    //     is_redoing = false
-    //     undo_stack.push(new EraseCommand(e.target))
-    // }
     if (e.target) {
         var obj = e.target;
+        console.log("witam witam");
+        if (should_push && username.localeCompare(getUser(obj.id)) == 0) {
+            console.log("siema siema");
+            if (!is_redoing) {
+                redo_stack = []
+            }
+            is_redoing = false
+            undo_stack.push(new EraseCommand(e.target))
+        }
+
         if (obj.removed)
             return; //Object already removed
 
         obj.set('removed', true);
 
         sendObjectToGroup(obj, eventTypes.removed);
+        obj.set('id', null);
     }
 })
+
+canvas.on('text:changed', function(e) {
+	var obj = e.target;
+	if(obj instanceof KatexTextbox) {
+		console.log("KATEX TEXT CHANGED");
+	//	obj.set('text', katex.renderToString("c = \\pm\\sqrt{a^2 + b^2}", { displayMode: true }));
+	//	canvas.renderAll();
+	}
+	else {
+		console.log("NOT KATEXT TEXT CHANGED");
+	}
+});
 
 setColorListener()
 setBrushSizeListener()
