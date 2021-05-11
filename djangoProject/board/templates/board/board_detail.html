@@ -38,9 +38,9 @@
                     </ul>
                 </div>
             </div>
-            {% endif %}
 
             <button class="btn-lg btn-outline-success" id="saveBtn">Save</button>
+            {% endif %}
         </div>
     </div>
     <div class="d-flex p-2 justify-content-between">
@@ -57,7 +57,7 @@
         </div>
         <div class = "d-flex float-left justify-content-sm-between">
 		<div id="export-button">
-			<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>
+			<!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
 		</div>
             <div class="dropdown float-left">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -131,8 +131,8 @@
 		}
 	</script>
     <script>
-    document.getElementById("saveBtn").addEventListener('click', saveCanvas);
     {% if request.user == object.admin_user_b %}
+        document.getElementById("saveBtn").addEventListener('click', saveCanvas);
         document.getElementById("code_generate").addEventListener('click', generateInviteLink);
     {% endif %}
     window.onload = loadCanvas();
@@ -212,12 +212,12 @@
             alert("Link copied!");
         }
     }
-	
+
 	        document.getElementById("saveBtn").addEventListener('click', saveCanvas);
-	
+
             console.log("witam w mojej tablicy");
 	        window.onload = loadCanvas();
-	
+
 	        function saveCanvas() {
 	            console.log("SAVE_CANVAS_RUN");
 	            var json = JSON.stringify(canvas.toJSON(propertiesToInclude));
@@ -230,7 +230,7 @@
 	                console.log(data)
 	            });
 	        }
-	
+
 	        function loadCanvas() {
 	            waitForSocketConnection(boardSocket, () => {
 	                console.log("callback!")

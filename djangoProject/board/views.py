@@ -102,6 +102,10 @@ def save_canvas(request):
 
     board.save()
 
+    #Clear the messages.
+    old_messages = messages.get_messages(request)
+    old_messages.used = True
+
     messages.success(request, 'Board updated!')
 
     data_text = 'Reply'
