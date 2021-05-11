@@ -34,7 +34,7 @@ const boardSocket = new WebSocket(
 
 // Ogarnianie websocketów.
 
-let pointer;        // Zmienna przechowująca aktualne współrzędne kursora
+
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
@@ -187,7 +187,6 @@ class KatexTextbox extends fabric.Textbox {
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
-        pointer = canvas.getPointer(event.e);
         if (mousePressed && currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
@@ -212,12 +211,12 @@ const setPanEvents = (canvas) => {
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
-
             var pointer = canvas.getPointer(event.e);
             createRect(canvas, pointer.x, pointer.dsay)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
-            createCirc(canvas)
+            var pointer = canvas.getPointer(event.e);
+            createCirc(canvas, pointer.x, pointer.y)
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
             var pointer = canvas.getPointer(event.e);
@@ -229,9 +228,9 @@ const setPanEvents = (canvas) => {
 	}
     })
     canvas.on('mouse:up', (event) => {
-        mousePressed = false;
-        canvas.setCursor('default');
-        canvas.renderAll();
+        mousePressed = false
+        canvas.setCursor('default')
+        canvas.renderAll()
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
@@ -253,9 +252,9 @@ const setPanEvents = (canvas) => {
 const setColorListener = () => {
     const picker = document.getElementById('colorPicker')
     picker.addEventListener('change', (event) => {
-        console.log("setColorListener " + event.target.value);
-        canvas.freeDrawingBrush.color = event.target.value;
-        canvas.requestRenderAll();
+        console.log("setColorListener " + event.target.value)
+        canvas.freeDrawingBrush.color = event.target.value
+        canvas.requestRenderAll()
     })
 }
 
@@ -302,7 +301,7 @@ const changeKatexMode = () => {
     currentMode = modes.katex
 }
 
-const createRect = (canvas, left = pointer.x, top = pointer.y) => {
+const createRect = (canvas, left = 100, top = 100) => {
     console.log("rect")
 
     const canvCenter = canvas.getCenter()
@@ -323,9 +322,9 @@ const createRect = (canvas, left = pointer.x, top = pointer.y) => {
     toggleMode(modes.move)
 }
 
-const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
-    console.log("circ");
-    const canvCenter = canvas.getCenter();
+const createCirc = (canvas, left = 100, top = 100) => {
+    console.log("circ")
+    const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
         radius: 50,
         fill: 'orange',
@@ -343,8 +342,8 @@ const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
 }
 
 const createKatex = (canvas, left = 100, top = 100) => {
-    console.log("katex");
-    const canvCenter = canvas.getCenter();
+    console.log("katex")
+    const canvCenter = canvas.getCenter()
     katex = new	KatexTextbox('KaTeX textbox', {
 	    left: left,
 	    top: top,
@@ -359,11 +358,10 @@ const createKatex = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-
 const createTextbox = (canvas, left = 100, top = 100) => {
     console.log("text")
     const canvCenter = canvas.getCenter()
-    textbox = new fabric.Textbox(text, {
+    textbox = new fabric.Textbox('Type here', {
         //left: canvCenter.left,
         left: left,
         // top: canvCenter.top,
@@ -397,7 +395,7 @@ const groupObjects = (canvas, group, shouldGroup) => {
     }
 }
 
-const imgAdded = (e, left = pointer.x, top = pointer.y) => {
+const imgAdded = (e) => {
     console.log(e)
     const inputElem = document.getElementById('myImg')
     const file = inputElem.files[0];
@@ -419,30 +417,6 @@ document.addEventListener('keydown', function (e) {
     }
 })
 
-document.addEventListener('paste', (event) => {
-    var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
-    console.log(JSON.stringify(items));
-    // find pasted image among pasted items
-    var blob = null;
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") === 0) {
-            blob = items[i].getAsFile();
-        }
-    }
-    // load image if there is a pasted image
-    if (blob !== null) {
-        reader.onload = function(event) {
-            console.log(event.target.result); // data url!
-        };
-        reader.readAsDataURL(blob);
-    }
-    else {
-        let text = (event.clipboardData || window.clipboardData).getData(event.clipboardData.items[0].type);
-        createTextbox(canvas, text);
-    }
-
-    event.preventDefault();
-});
 
 const canvas = initCanvas('canvas')
 
@@ -724,8 +698,6 @@ inputFile.addEventListener('change', imgAdded)
 
 reader.addEventListener("load", () => {
     fabric.Image.fromURL(reader.result, img => {
-        img.left = pointer.x;
-        img.top = pointer.y;
         canvas.add(img)
         canvas.requestRenderAll()
     })
