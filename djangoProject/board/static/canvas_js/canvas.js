@@ -393,7 +393,7 @@ const groupObjects = (canvas, group, shouldGroup) => {
     }
 }
 
-const imgAdded = (e) => {
+const imgAdded = (e, left = pointer.x, top = pointer.y) => {
     console.log(e)
     const inputElem = document.getElementById('myImg')
     const file = inputElem.files[0];
@@ -720,6 +720,8 @@ inputFile.addEventListener('change', imgAdded)
 
 reader.addEventListener("load", () => {
     fabric.Image.fromURL(reader.result, img => {
+        img.left = pointer.x;
+        img.top = pointer.y;
         canvas.add(img)
         canvas.requestRenderAll()
     })
