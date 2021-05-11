@@ -212,17 +212,20 @@ const setPanEvents = (canvas) => {
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
-            createRect(canvas)
+
+            var pointer = canvas.getPointer(event.e);
+            createRect(canvas, pointer.x, pointer.dsay)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
             createCirc(canvas)
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
-            createTextbox(canvas)
+            var pointer = canvas.getPointer(event.e);
+            createTextbox(canvas, pointer.x, pointer.y)
         } else if (currentMode === modes.katex) {
 	    console.log("Create Katex!")
 	    var pointer = canvas.getPointer(event.e);
-	    createKatex(canvas, pointer.x, pointer.y)
+	    createKatex(canvas, pointer.x, pointer.y) 
 	}
     })
     canvas.on('mouse:up', (event) => {
@@ -356,7 +359,8 @@ const createKatex = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createTextbox = (canvas, text = 'Type here', left = pointer.x, top = pointer.y) => {
+
+const createTextbox = (canvas, left = 100, top = 100) => {
     console.log("text")
     const canvCenter = canvas.getCenter()
     textbox = new fabric.Textbox(text, {
