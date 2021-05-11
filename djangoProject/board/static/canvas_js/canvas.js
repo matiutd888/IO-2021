@@ -34,7 +34,7 @@ const boardSocket = new WebSocket(
 
 // Ogarnianie websocketów.
 
-
+let pointer;        // Zmienna przechowująca aktualne współrzędne kursora
 var mouseDown = 0; // Zmienna potrzebna by erasy nie były bez kliknięcia
 document.body.onmousedown = function () {
     ++mouseDown;
@@ -187,6 +187,7 @@ class KatexTextbox extends fabric.Textbox {
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
+        pointer = canvas.getPointer(event.e);
         if (mousePressed && currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
@@ -211,19 +212,15 @@ const setPanEvents = (canvas) => {
             // najeżdżania. Może więc warto to usunąć
         } else if (currentMode === modes.rectangle) {
             console.log("Create rectangle!")
-            var pointer = canvas.getPointer(event.e);
-            createRect(canvas, pointer.x, pointer.dsay)
+            createRect(canvas)
         } else if (currentMode === modes.circle) {
             console.log("Create circle!")
-            var pointer = canvas.getPointer(event.e);
-            createCirc(canvas, pointer.x, pointer.y)
+            createCirc(canvas)
         } else if (currentMode === modes.text) {
             console.log("Create textbox!")
-            var pointer = canvas.getPointer(event.e);
-            createTextbox(canvas, pointer.x, pointer.y)
+            createTextbox(canvas)
         } else if (currentMode === modes.katex) {
 	    console.log("Create Katex!")
-	    var pointer = canvas.getPointer(event.e);
 	    createKatex(canvas, pointer.x, pointer.y) 
 	}
     })
@@ -301,7 +298,7 @@ const changeKatexMode = () => {
     currentMode = modes.katex
 }
 
-const createRect = (canvas, left = 100, top = 100) => {
+const createRect = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("rect")
 
     const canvCenter = canvas.getCenter()
@@ -322,7 +319,7 @@ const createRect = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createCirc = (canvas, left = 100, top = 100) => {
+const createCirc = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("circ")
     const canvCenter = canvas.getCenter()
     circle = new fabric.Circle({
@@ -341,7 +338,7 @@ const createCirc = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createKatex = (canvas, left = 100, top = 100) => {
+const createKatex = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("katex")
     const canvCenter = canvas.getCenter()
     katex = new	KatexTextbox('KaTeX textbox', {
@@ -358,10 +355,10 @@ const createKatex = (canvas, left = 100, top = 100) => {
     toggleMode(modes.move)
 }
 
-const createTextbox = (canvas, left = 100, top = 100) => {
+const createTextbox = (canvas, text = 'Type here', left = pointer.x, top = pointer.y) => {
     console.log("text")
     const canvCenter = canvas.getCenter()
-    textbox = new fabric.Textbox('Type here', {
+    textbox = new fabric.Textbox(text, {
         //left: canvCenter.left,
         left: left,
         // top: canvCenter.top,
@@ -417,6 +414,30 @@ document.addEventListener('keydown', function (e) {
     }
 })
 
+document.addEventListener('paste', (event) => {
+    var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
+    console.log(JSON.stringify(items));
+    // find pasted image among pasted items
+    var blob = null;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") === 0) {
+            blob = items[i].getAsFile();
+        }
+    }
+    // load image if there is a pasted image
+    if (blob !== null) {
+        reader.onload = function(event) {
+            console.log(event.target.result); // data url!
+        };
+        reader.readAsDataURL(blob);
+    }
+    else {
+        let text = (event.clipboardData || window.clipboardData).getData(event.clipboardData.items[0].type);
+        createTextbox(canvas, text);
+    }
+
+    event.preventDefault();
+});
 
 const canvas = initCanvas('canvas')
 
@@ -698,6 +719,8 @@ inputFile.addEventListener('change', imgAdded)
 
 reader.addEventListener("load", () => {
     fabric.Image.fromURL(reader.result, img => {
+        img.top = pointer.y;
+        img.left = pointer.x;
         canvas.add(img)
         canvas.requestRenderAll()
     })
