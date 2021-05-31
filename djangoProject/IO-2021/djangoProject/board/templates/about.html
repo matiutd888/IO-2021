@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="content-section">
+        <h1>Trochę o nas...</h1>
+        <p class="article-content">
+            Jesteśmy studentami drugiego roku na MiMUW, kierunek: informatyka. Tworzymy ten projekt na zaliczenie z IO.
+            <br>Mamy nadzieję, że każdy użytkownik znajdzie tutaj coś dla siebie :) Z FARTEM!
+        </p>
+
+    <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/domingo.jpg' %}" alt="Dominik">
+                    <div class="card-body">
+                        <h5 class="card-title"> Dominik Wiśniewski </h5>
+                        <p class="card-body"> Wielki człowiek, z Poznania, naprawdę koks. Jeden z dwóch najlepszych algorytmików w Polsce.</p>
+                        <a href="#" class="btn btn-outline-primary">Poproś o numer telefonu...</a>
+                    </div>
+    </div>
+    <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/mati.jpg' %}" alt="Mateusz">
+                    <div class="card-body">
+                        <h5 class="card-title"> Mateusz Nowakowski </h5>
+                        <p class="card-body">Tajna broń naszej drużyny, najsłodszy i jednocześnie najmądrzejszy człowiek w teamie. Nie ma dla niego rzeczy niemożliwych, oprócz kupno alkoholu bez pytania o dowód.</p>
+                        <a href="#" class="btn btn-outline-primary">Zapytaj o dowód osobisty...</a>
+                    </div>
+    </div>
+    <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/oiowiec.jpg' %}" alt="Kamil Oiowiec">
+                    <div class="card-body">
+                        <h5 class="card-title"> Kamil Zwierzchowski </h5>
+                        <p class="card-body">Spider-man, zaplątał się w sieci algorytmów...</p>
+                        <a href="#" class="btn btn-outline-primary">Rozwiąż zadanko</a>
+                    </div>
+    </div>
+    <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/stachu.jpg' %}" alt="Stasiu Świątkowski">
+                    <div class="card-body">
+                        <h5 class="card-title"> Stasiu Świątkowski </h5>
+                        <p class="card-body">Go jeszcze nie znam, ale dobrze się z nim pracuje.</p>
+                        <a href="#" class="btn btn-outline-primary">Napisz do mnie...</a>
+                    </div>
+    </div>
+    <div class="card float-left m-2"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/bartek.jpg' %}" alt="Bartus">
+                    <div class="card-body">
+                        <h5 class="card-title"> Bartosz Ruszewski </h5>
+                        <p class="card-body">No on tu po prostu jest, ale chociaż dobrze wygląda.</p>
+                        <a href="#" class="btn btn-outline-primary">Sage me!</a>
+                    </div>
+    </div>
+    <div class="blockquote-footer">
+        <h3>Opieke nad projektem sprawuje:</h3>
+        <div class="card"  style="width: 18rem;">
+                <img class="card-img-top" src="{% static 'authors/jan-pawel-ii.jpg' %}" alt="Jan Paweł II">
+                    <div class="card-body">
+                        <h5 class="card-title"> Pan Paweł</h5>
+                    </div>
+        </div>
+    </div>
+    </div>
+{% endblock content %}
