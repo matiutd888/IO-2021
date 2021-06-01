@@ -39,7 +39,7 @@ def disp_board_settings(request, pk):
     return render(request, 'board/board_settings.html', context={'board': b})
 
 
-class UserBoardsView(ListView):
+class UserBoardsView(LoginRequiredMixin, ListView):
     model = Board
     template_name = 'profile.html'
     context_object_name = 'all_user_boards'
@@ -59,7 +59,7 @@ def dispBoard(request, pk):
 
     return render(request, 'board/board_detail.html', context={'object': b})
 
-class BoardDetailView(DetailView, UserPassesTestMixin):
+class BoardDetailView(LoginRequiredMixin, DetailView, UserPassesTestMixin):
     model = Board
 
     def test_func(self):
