@@ -6,6 +6,12 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge"/>
     <link rel="stylesheet" href="{% static 'canvas_js/style.css' %}"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.css" integrity="sha384-r/BYDnh2ViiCwqZt5VJVWuADDic3NnnTIEOv4hOh05nSfB6tjWpKmn1kUHOVkMXc" crossorigin="anonymous">
+
+    <!-- Ikonki -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://kit.fontawesome.com/3c20d8dde7.js" crossorigin="anonymous"></script>
+
     <title>Canvas</title>
 
 {% endblock head_block %}
@@ -23,7 +29,7 @@
                     <input type="number" name="linkUsage" id="linkUsage" value="1">
                 </label>
                 <button class="btn-lg btn-outline-info" id="code_generate" type="button" data-toggle="collapse" data-target="#collapseInvite" aria-expanded="false" aria-controls="collapseInvite">
-                        Generate invite code.
+                    <i class="material-icons" style="font-size: 2rem;">group_add</i>
                 </button>
                 <div class="collapse" id="collapseInvite">
                     <ul class="list-group">
@@ -39,21 +45,21 @@
                 </div>
             </div>
 
-            <button class="btn-lg btn-outline-success" id="saveBtn">Save</button>
+            <button class="btn-lg btn-outline-success" id="saveBtn"><i class="material-icons" style="font-size: 2rem;">save</i></button>
             {% endif %}
         </div>
     </div>
     <div class="d-flex p-2 justify-content-between">
         <div class="float-left">
             <div id="mode-buttons">
-                <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)">Move objects</button>
-                <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)">Move Pan</button>
-                <button class="btn btn-outline-primary" id="drawing"  aria-pressed="true" onclick="toggleMode(modes.drawing)">Draw</button>
-                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)">Erase</button>
+                <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)"><i class="bi bi-cursor" style="font-size: 1.25rem;"></i></button>
+                <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)"><i class="material-icons">pan_tool</i><i class="material-icons">open_with</i></button>
+                <button class="btn btn-outline-primary" id="drawing"  aria-pressed="true" onclick="toggleMode(modes.drawing)"><i class="material-icons">mode_edit</i></button>
+                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)"><i class="fas fa-eraser" style="font-size: 1.7rem;"></i></button>
             </div>
 
-            <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)">Clear</button>
-            <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)">Restore</button>
+            <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)"><i class="material-icons">delete</i></button>
+            <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)"><i class="material-icons">restore</i></button>
         </div>
         <div class = "d-flex float-left justify-content-sm-between">
 		<div id="export-button">
