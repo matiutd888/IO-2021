@@ -375,6 +375,8 @@ const createTextbox = (canvas, text = 'Type here', left = pointer.x, top = point
 }
 
 
+
+
 const groupObjects = (canvas, group, shouldGroup) => {
     if (shouldGroup) {
         const objects = canvas.getObjects()
@@ -438,6 +440,24 @@ document.addEventListener('paste', (event) => {
 
     event.preventDefault();
 });
+
+const changeEmptyBackground = () => {
+	console.log("empty");
+	canvas.backgroundColor = 0;
+	canvas.renderAll();
+}
+
+const changeLinesBackground = () => {
+	console.log("lines");
+	canvas.setBackgroundColor({ source: 'https://img.pngio.com/png-lined-paper-transparent-lined-paperpng-images-pluspng-notebook-paper-template-png-420_315.png', repeat: 'repeat'}, function() {canvas.renderAll();});
+}
+
+const changeCheckeredBackground = () => {
+	console.log("checkered");
+	canvas.setBackgroundColor({ source: 'https://media.istockphoto.com/vectors/checkered-notebook-paper-vector-seamless-pattern-vector-id838296134', repeat: 'repeat'}, function() {canvas.renderAll();});
+
+	canvas.renderAll();
+}
 
 const canvas = initCanvas('canvas')
 

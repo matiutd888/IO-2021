@@ -68,11 +68,21 @@
 		    <a class="dropdown-item" onclick="changeTextMode()">Textbox</a>
                     <a class="dropdown-item" onclick="changeRectMode()">Rectangle</a>
                     <a class="dropdown-item" onclick="changeCircMode()">Circle</a>
-		    <a class="dropdown-item" onclick="changeKatexMode()">KaTeX</a>
 <!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, true)">Group</a>-->
 <!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, false)">Ungroup</a>-->
                 </div>
             </div>
+	    <div class="dropdown float-left">	
+		<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Background type
+                </button>
+
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		    <a class="dropdown-item" onclick="changeEmptyBackground()">Empty</a>
+                    <a class="dropdown-item" onclick="changeCheckeredBackground()">Checkered</a>
+                    <a class="dropdown-item" onclick="changeLinesBackground()">Lines</a>
+                </div>
+	    </div>
             <div class="dropdown float-left ml-1">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Change color
