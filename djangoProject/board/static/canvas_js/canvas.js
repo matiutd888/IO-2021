@@ -459,6 +459,71 @@ const changeCheckeredBackground = () => {
 	canvas.renderAll();
 }
 
+
+    function tex(text, callback) {
+        // Create a script element with the LaTeX code
+        var div = document.createElement("div");
+        div.style.position = "absolute";
+        div.style.left = "-1000px";
+        document.body.appendChild(div);
+        var se = document.createElement("script");
+        se.setAttribute("type", "math/tex");
+        se.innerHTML = text;
+        div.appendChild(se);
+        MathJax.Hub.Process(se, function() {
+            // When processing is done, remove from the DOM
+            // Wait some time before doing tht because MathJax calls this function before
+            // actually displaying the output
+            var display = function() {
+                // Get the frame where the current Math is displayed
+                var frame = document.getElementById(se.id + "-Frame");
+                if(!frame) {
+		    setTimeout(display, 500);
+                    return;
+                }
+
+                // Load the SVG
+                var svg = frame.getElementsByTagName("svg")[0];
+                svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                svg.setAttribute("version", "1.1");
+                var height = svg.parentNode.offsetHeight;
+                var width = svg.parentNode.offsetWidth;
+                svg.setAttribute("height", height);
+                svg.setAttribute("width", width);
+                svg.removeAttribute("style");
+
+                // Embed the global MathJAX elements to it
+                var mathJaxGlobal = document.getElementById("MathJax_SVG_glyphs");
+                svg.appendChild(mathJaxGlobal.cloneNode(true));
+
+                // Create a data URL
+                var svgSource = '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">' + "\n" + svg.outerHTML;
+                var retval = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgSource)));
+
+
+                // Remove the temporary elements
+                document.body.removeChild(div);
+
+                // Invoke the user callback
+                callback(retval, width, height);
+            };
+		setTimeout(display, 1000);
+        });
+    }
+
+
+
+const loadLatex = (latexSource) => {
+	console.log("latex source: " + latexSource)
+	tex(latexSource, function(svg, width, height) {
+          fabric.Image.fromURL(svg, function(img) {
+              img.height = height;
+              img.width = width;
+              canvas.add(img);
+          });
+      });
+}
+
 const canvas = initCanvas('canvas')
 
 const JSONState = {}

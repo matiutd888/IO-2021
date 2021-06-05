@@ -60,6 +60,10 @@
 			<!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
 		</div>
             <div class="dropdown float-left">
+		<input type="text" id="latexSource">
+		<button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="loadLatex(document.getElementById('latexSource').value)">Load Latex</button>
+
+
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Additional
                 </button>
@@ -123,6 +127,9 @@
         {% endif %}
 
     </div>
+
+    <!-- It is important to use the SVG configuration of MathJax! -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_SVG"></script>
 
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.js" integrity="sha384-zDIgORxjImEWftZXZpWLs2l57fMX9B3yWFPN5Ecabe211Hm5ZG/OIz2b07DYPUcH" crossorigin="anonymous"></script>
     <script src="FileSaver.min.js"></script>
