@@ -68,12 +68,12 @@
                 <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)">Restore</button>
             </div>
             <div class="d-flex float-left justify-content-sm-between">
-                <div id="export-button">
-                    <!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
-                </div>
                 <div class="dropdown float-left">
+                    <button class="btn btn-outline-primary" id="export-btn" aria-pressed="true"
+                            onclick="exportToPng(canvas)">Export To PNG
+                    </button>
                     <input type="text" id="latexSource">
-                    <button class="btn btn-outline-primary" id="erase" aria-pressed="true"
+                    <button class="btn btn-outline-primary" id="latex-btn" aria-pressed="true"
                             onclick="loadLatex(document.getElementById('latexSource').value)">Load Latex
                     </button>
 
@@ -91,6 +91,7 @@
                         <!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, false)">Ungroup</a>-->
                     </div>
                 </div>
+
                 <div class="dropdown float-left">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -159,13 +160,15 @@
     <script src="{% static 'canvas_js/jscolor.js' %}"></script>
     <script src="{% static 'canvas_js/canvas.js' %}"></script>
     <script>
-        function exportToPNG() {
-            let cur_domain = document.domain;
-            document.domain = "students.mimuw.edu.pl";
-            document.getElementById("canvas").toBlob(function (blob) {
-                saveAs(blob, "my_canvas.png");
-            });
-            document.domain = cur_domain;
+        function exportToPng(_canvas) {
+            console.log("Export to png clicked!")
+
+            let downloadLink = document.createElement('a');
+            downloadLink.setAttribute('download', 'CanvasAsImage.png');
+            let dataURL = _canvas.toDataURL('image/png');
+            let url = dataURL.replace(/^data:image\/png/, 'data:application/octet-stream');
+            downloadLink.setAttribute('href', url);
+            downloadLink.click();
         }
     </script>
     <script>
