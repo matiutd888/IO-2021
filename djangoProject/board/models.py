@@ -29,7 +29,6 @@ class Board(models.Model):
 
         return inv
 
-
 class BoardInviteCode(models.Model):
     code = models.TextField(max_length=10)
     related_board = models.ForeignKey(Board, related_name='invite_codes', on_delete=models.CASCADE)

@@ -76,9 +76,10 @@ const setCanvasSize = () => {
 
 const setBackground = (url, canvas) => {
     fabric.Image.fromURL(url, (img) => {
+        canvas.backgroundColor = 'white'
         canvas.backgroundImage = img
         canvas.renderAll()
-    })
+    }, {crossOrigin: "Anonymous"})
 }
 
 
@@ -397,7 +398,8 @@ const groupObjects = (canvas, group, shouldGroup) => {
 const imgAdded = (e) => {
     console.log(e)
     const inputElem = document.getElementById('myImg')
-    const file = inputElem.files[0];
+    file = inputElem.files[0];
+    file.crossOrigin = "anonymous"
     reader.readAsDataURL(file)
 }
 
@@ -520,7 +522,8 @@ const loadLatex = (latexSource) => {
               img.height = height;
               img.width = width;
               canvas.add(img);
-          });
+          },
+              {crossOrigin: "Anonymous"});
       });
 }
 
@@ -808,7 +811,8 @@ reader.addEventListener("load", () => {
         img.left = pointer.x;
         canvas.add(img)
         canvas.requestRenderAll()
-    })
+    },
+        {crossOrigin: "Anonymous"})
 })
 
 function enliven(_canvas, obj) {
