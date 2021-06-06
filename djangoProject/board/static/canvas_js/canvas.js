@@ -560,6 +560,36 @@ toggleMode(modes.move) // default mode
 
 const reader = new FileReader()
 
+const objToVersion = new Map();
+
+function checkVersion(obj) {
+    if (!obj) {
+        return false;
+    }
+    if (!objToVersion.has(obj.id)) {
+        return true;
+    }
+    let version = objToVersion.get(obj.id);
+    console.log("do cofania");
+    console.log(obj);
+//    return obj.owner == username && obj.owner == version[0] && obj.generation == version[1];
+    let oldObj = getObjectFromId(canvas, obj.id);
+    if (oldObj === null) {
+        return true;
+    }
+    return Math.abs(obj.generation - oldObj.generation) < 2 && oldObj.owner == username;
+}
+
+function setVersion(obj) {
+    // let last = -1;
+    // if (objToVersion.has(obj.id)) {
+    //     last = objToVersion.get(obj.id)[1];
+    // }
+    // if (last < obj.generation) {
+        objToVersion.set(obj.id, [obj.owner, obj.generation]);
+    // }
+}
+
 class EraseCommand {
     constructor(target) {
         this.target = target
@@ -567,6 +597,7 @@ class EraseCommand {
     }
 
     undo(canvas) {
+        if (!checkVersion)
         canvas.add(this.target)
         canvas.requestRenderAll()
     }
@@ -594,6 +625,47 @@ class AddCommand {
     }
 }
 
+class ModifyCommand {
+    constructor(target) {
+        this.target = target
+        this.type = operationTypes.modify
+    }
+
+    undo(canvas) {
+//        canvas.modify(this.target)
+        let oldObj = getObjectFromId(canvas, this.target.id);
+        console.log("witam witam");
+        console.log(this.target);
+        console.log(oldObj);
+        console.log("zegnam zegnam");
+        Object.assign(oldObj, this.target);
+        console.log("teraz");
+        console.log(oldObj);
+        console.log(canvas.getObjects());
+        this.target = oldObj;
+        onModify(this);
+        canvas.requestRenderAll();
+    }
+
+    execute(canvas) {
+//        canvas.modify(this.target)
+        console.log("gotow?");
+        console.log(this.target);
+        console.log(canvas.getObjects());
+        let oldObj = getObjectFromId(canvas, this.target.id);
+        if (this.target === null) {
+            console.log("jam jest problem");
+        }
+        if (oldObj === null) {
+            console.log("jam");
+        }
+        Object.assign(oldObj, this.target);
+        this.target = oldObj;
+        onModify(this);
+        canvas.requestRenderAll()
+    }
+}
+
 var undo_stack = []
 var redo_stack = []
 var is_redoing = false
@@ -606,10 +678,27 @@ function exportToPNG() {
 }
 */
 function undo() {
-    if (undo_stack.length === 0)
-        return
-    let op = undo_stack.pop()
-    redo_stack.push(op)
+    let op = null;
+    if (undo_stack.length === 0) {
+        return;
+    }
+    while (undo_stack.length !== 0) {
+        op = undo_stack.pop();
+        if (checkVersion(op.target)) {
+            break;
+        }
+    }
+    if (!checkVersion(op.target)) {
+        return;
+    }
+    console.log(undo_stack);
+    if (op.type == operationTypes.modify) {
+        let newObj = Object.assign({}, copies.get(op.target.id));
+        redo_stack.push(new ModifyCommand(newObj));
+    }
+    else {
+        redo_stack.push(op)
+    }
     should_push = false
     op.undo(canvas)
     should_push = true
@@ -620,7 +709,16 @@ function redo() {
     is_redoing = true
     if (redo_stack.length === 0)
         return
-    const op = redo_stack.pop();
+    let op = null;
+    while (redo_stack.length !== 0) {
+        op = redo_stack.pop();
+        if (checkVersion(op.target)) {
+            break;
+        }
+    }
+    if (!checkVersion(op.target)) {
+        return;
+    }
 
     op.execute(canvas)
 }
@@ -637,6 +735,8 @@ function getObjectFromId(ctx, id) {
     return null
 }
 
+const currAdd = new Set();
+
 function Board_OnSync(_canvas, obj) {
     var existing = getObjectFromId(_canvas, obj.id);
     console.log("Board on Sync: " + existing);
@@ -647,6 +747,16 @@ function Board_OnSync(_canvas, obj) {
             _canvas.renderAll();
         }
         return;
+    }
+    if (existing && !existing.removed) {
+        if (currAdd.has(existing.id)) {
+            currAdd.delete(existing.id);
+        }
+        else {
+            Object.assign(existing, obj);
+            onModify(new ModifyCommand(existing), false);
+            return;
+        }
     }
 
     if (existing) {
@@ -695,6 +805,8 @@ function getUser(s) {
     return s.substring(n + 1);
 }
 
+const copies = new Map();
+
 canvas.on("object:added", (e) => {
     console.log("OBJECT ADDED: ", e.target)
     if (e.target) {
@@ -706,16 +818,33 @@ canvas.on("object:added", (e) => {
                 return fabric.util.object.extend(toJSON.call(this), {
                     id: this.id,
                     removed: this.removed,
+                    owner: this.owner,
+                    generation: this.generation,
+                    oldId: this.oldId,
                 });
             };
         })(obj.toJSON);
 
         if (!obj.id) {
             // Object was created by us
-            obj.set('id', Date.now() + '-' + username);
+            if (obj.oldid == undefined) {
+                obj.set('id', Date.now() + '-' + username);
+            }
+            else {
+                obj.set('id', obj.oldid);
+            }
+            obj.set('owner', username);
+            obj.set('generation', 0);
+            setVersion(obj);
+            currAdd.add(obj.id);
             sendObjectToGroup(obj, eventTypes.added);
         }
+        setVersion(obj);
+        let newObj = Object.assign({}, obj);
+        copies.set(newObj.id, newObj);
     }
+    console.log("OBJECT ADDED: ", e.target)
+
 //    IMPLEMENTACJA CTRL Z
      console.log("object added id = " + obj.id)
     if (should_push && username.localeCompare(getUser(obj.id)) == 0) {
@@ -727,39 +856,78 @@ canvas.on("object:added", (e) => {
     }
 })
 
-canvas.on("object:modified", e => {
+function onModify(e, first=true) {
+    console.log("hejka stulejka");
     if (e.target) {
+        console.log("ojej");
         console.log("itam")
         var obj = e.target;
         if (obj.removed) {
             return;
         }
+        let oldObj = getObjectFromId(canvas, obj.id);
+        if (oldObj && !oldObj.removed) {
+            if (oldObj === obj && first) {
+                if (obj.owner != username) {
+                    obj.owner = username;
+                    obj.generation++;
+                }
+                currAdd.add(obj.id);
+                sendObjectToGroup(obj, eventTypes.modified);
+            }
+            else {
+                Object.assign(oldObj, obj);
+            }
+        }
+        setVersion(obj);
+        let oldVer = copies.get(obj.id);
+        if (should_push && obj.owner == username) {
+            if (!is_redoing) {
+                redo_stack = [];
+            }
+            is_redoing = false;
+            let newObj = Object.assign({}, oldVer);
+            console.log("witam");
+            console.log(newObj);
+            console.log("zegnam");
+            undo_stack.push(new ModifyCommand(newObj));
+        }
+        Object.assign(oldVer, obj);
+        obj.setCoords();
+        canvas.requestRenderAll();
+        canvas.renderAll();
+        console.log("nowa wersja");
+        console.log(oldVer);
+        console.log(undo_stack);
 
-        obj.set('removed', true);
-        obj.toJSON = (function (toJSON) {
-            return function () {
-                return fabric.util.object.extend(toJSON.call(this), {
-                    id: this.id,
-                    uid: this.uid,
-                    removed: this.removed
-                });
-            };
-        })(obj.toJSON);
 
-        sendObjectToGroup(obj, eventTypes.removed);
+        // obj.set('removed', true);
+        // obj.toJSON = (function (toJSON) {
+        //     return function () {
+        //         return fabric.util.object.extend(toJSON.call(this), {
+        //             id: this.id,
+        //             uid: this.uid,
+        //             removed: this.removed
+        //         });
+        //     };
+        // })(obj.toJSON);
 
-        obj.set('removed', false);
-        obj.set('id', Date.now() + '-' + username);
-        obj.toJSON = (function (toJSON) {
-            return function () {
-                return fabric.util.object.extend(toJSON.call(this), {
-                    id: this.id,
-                });
-            };
-        })(obj.toJSON);
-        sendObjectToGroup(obj, eventTypes.added);
+        // sendObjectToGroup(obj, eventTypes.removed);
+
+        // obj.set('removed', false);
+        // obj.set('id', Date.now() + '-' + username);
+        // obj.toJSON = (function (toJSON) {
+        //     return function () {
+        //         return fabric.util.object.extend(toJSON.call(this), {
+        //             id: this.id,
+        //         });
+        //     };
+        // })(obj.toJSON);
+        // sendObjectToGroup(obj, eventTypes.added);
     }
-})
+}
+
+canvas.on("object:modified", onModify)
 
 canvas.on("object:removed", e => {
     if (e.target) {
@@ -773,13 +941,21 @@ canvas.on("object:removed", e => {
             is_redoing = false
             undo_stack.push(new EraseCommand(e.target))
         }
-
-        if (obj.removed)
+        copies.delete(obj.id);
+        if (obj.removed) {
+            setVersion(obj);
             return; //Object already removed
+        }
 
         obj.set('removed', true);
+        if (obj.owner != username) {
+            obj.owner = username;
+            obj.generation++;
+        }
+        setVersion(obj);
 
         sendObjectToGroup(obj, eventTypes.removed);
+        obj.set('oldid', obj.id);
         obj.set('id', null);
     }
 })
