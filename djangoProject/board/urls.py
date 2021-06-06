@@ -14,12 +14,27 @@ from board.views import (
     del_invite,
     kick_user,
     disp_board_settings,
-    dispBoard)
+    dispBoard,
+    disp_classes,
+    ClassRoomCreateView,
+    createBoardForClassroom,
+    use_invite_classroom,
+    gen_classroom_invite,
+    classroom_settings,
+    kick_user_from_class)
 
 urlpatterns = [
     url('profile/', UserBoardsView.as_view(), name='disp_profile'),
     url('about/', about, name='about'),
     url('canvas/', canvas, name='canvas'),
+    url('classrooms/new/', ClassRoomCreateView.as_view(), name="create_classroom"),
+    path('classrooms/newBoard/<int:pk>', createBoardForClassroom, name="add_classroom_board"),
+    path('classrooms/generate/<int:pk>', gen_classroom_invite, name="gen_class_invite"),
+    path('classrooms/settings/<int:pk>', classroom_settings, name="class_settings"),
+    path('classrooms/join/<str:g_code>', use_invite_classroom, name='join_class'),
+    path('classrooms/kick/<int:c_pk>', kick_user_from_class, name='kick_class'),
+    url('classrooms/join/', use_invite_classroom, name="join_class_code"),
+    url('classrooms/', disp_classes, name="disp_classrooms"),
     url('board/new/', BoardCreateView.as_view(), name='board-create'),
     path('board/<int:pk>/', dispBoard, name='board-detail'),
     url('board/update/', save_canvas, name='save_canvas'),
@@ -33,3 +48,4 @@ urlpatterns = [
     url('board/update/', save_canvas, name='save_canvas'),
     url('', UserBoardsView.as_view(), name='disp-boards'),
 ]
+

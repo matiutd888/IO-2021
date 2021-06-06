@@ -103,3 +103,11 @@ a.article-title:hover {
 .card:hover .image-overlay {
     opacity: 1;
 }
+
+.board-content {
+    flex: 3;
+}
+
+.navigate-sec {
+    flex: 1;
+}

@@ -5,7 +5,7 @@
       <paths name="students">
         <serverdata>
           <mappings>
-            <mapping deploy="/public_html/IO" local="$PROJECT_DIR$" web="" />
+            <mapping deploy="/FunBoard/IO-2021/djangoProject" local="$PROJECT_DIR$" web="" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/venv" />
