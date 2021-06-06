@@ -88,7 +88,7 @@ class ImportBoardForm(forms.Form):
         file = self.cleaned_data.get('importedBoardFile')
         file.open(mode='r')
         lines = file.read()
-        print("LINES\n" + str(lines))
+        # print("LINES\n" + str(lines))
         file.close()
         Board.objects.create(board_string=lines.decode('utf-8'), admin_user_b=user, title=self.cleaned_data.get('title'))
         return

@@ -172,7 +172,7 @@
         function exportToJSON(_canvas) {
             var json = JSON.stringify(_canvas.toJSON());
             console.log(json);
-            downloadString(json, 'txt', 'canvasAsJSON')
+            downloadString(json, 'txt', '{{ object.title }}')
         }
 
         function downloadString(text, fileType, fileName) {
@@ -194,7 +194,7 @@
             console.log("Export to png clicked!")
 
             let downloadLink = document.createElement('a');
-            downloadLink.setAttribute('download', 'CanvasAsImage.png');
+            downloadLink.setAttribute('download', '{{ object.title }}.png');
             let dataURL = _canvas.toDataURL('image/png');
             let url = dataURL.replace(/^data:image\/png/, 'data:application/octet-stream');
             downloadLink.setAttribute('href', url);
