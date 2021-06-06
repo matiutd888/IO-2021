@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="content-section">
+        <h1 class="account-heading">
+            {{ class.title }} - SETTINGS.
+        </h1>
+    <h3 class="article-title">
+            Manage your classroom.
+    </h3>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <h2>Generate invites:</h2>
+            <div>
+                <label for="linkUsage">Max usage number:</label>
+                    <input type="number" name="linkUsage" id="linkUsage" value="1">
+                <button class="btn-lg btn-outline-info" id="code_generate" type="button" data-toggle="collapse" data-target="#collapseInvite" aria-expanded="false" aria-controls="collapseInvite">
+                        Generate.
+                </button>
+                <div class="collapse" id="collapseInvite">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <div class="text float-left" id="invite_code"></div>
+                            <button class="btn btn-outline-secondary" onclick="copyCode(false)">Copy code.</button>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <div class="text h6 float-left" id="invite_link"></div>
+                            <button class="btn btn-outline-secondary" onclick="copyCode(true)">Copy link.</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <h2> Create new board for the class:</h2>
+            <div>
+                <form method="post" action="{% url 'add_classroom_board' class.pk %} ">
+                    {% csrf_token %}
+                    <input type="text" id="board_title" name="board_title">
+                    <input type="submit" class="btn btn-primary" value="Add board">
+                </form>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <h2> Kick students: </h2>
+            <div class="d-flex">
+                <div class="float-left">
+                    <form method="POST" action="{% url 'kick_class' class.pk %}">
+                    {% csrf_token %}
+                    <fieldset class="form-group">
+                        <label for="user_id"> Pick username: </label>
+                            <select id="user_id" name="user_id">
+                                {% for value in class.students.all %}
+                                    <option value="{{ value.pk }}">{{ value.username }}</option>
+                                {% endfor %}
+                            </select>
+                    </fieldset>
+                </div>
+                <div class="form-group float-left ml-3">
+                    <button class="btn btn-outline-info" type="submit">Kick</button>
+                </div>
+            </div>
+        </form>
+        </li>
+    </ul>
+    </div>
+
+    <script>
+        var generate = true;
+
+        function generateClassInviteLink() {
+            if (generate) {
+                var number = document.getElementById("linkUsage").value;
+                console.log(number)
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'gen_class_invite' class.pk %}',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        number: number
+                    },
+                    success: function callback(response) {
+                        let code = response;
+
+                        document.getElementById('invite_code').innerHTML = code;
+                        document.getElementById('invite_link').innerHTML = '{{ request.get_host }}' + '{% url "join_class_code" %}' + code;
+
+                    }
+                })
+            }
+            else {
+                console.log("Skipping!");
+            }
+
+            generate = !generate;
+        }
+
+        function copyCode(link) {
+        let copyText;
+
+        if (!link) {
+            copyText = document.getElementById('invite_code').innerText;
+        }
+        else {
+            copyText = document.getElementById('invite_link').innerText;
+        }
+
+        const tmp = document.createElement("input");
+        tmp.type = "text";
+        tmp.value = copyText;
+
+        document.body.appendChild(tmp);
+
+        tmp.select();
+
+        document.execCommand("Copy");
+
+        document.body.removeChild(tmp);
+
+        if (!link) {
+            alert("Code copied!");
+        }
+        else {
+            alert("Link copied!");
+        }
+    }
+
+        document.getElementById("code_generate").addEventListener('click', generateClassInviteLink);
+    </script>
+
+
+{% endblock content %}

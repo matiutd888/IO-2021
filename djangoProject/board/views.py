@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView, DetailView, ListView, DeleteView, FormView
-from .models import Board, User
-from .invite import handle_invite
+from .models import Board, User, ClassRoom
+from .invite import handle_invite, handle_invite_class
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
@@ -13,6 +13,13 @@ from django import forms
 @login_required
 def disp_profiles(request):
     return render(request, 'profile.html')
+
+
+def disp_classes(request):
+    context = {
+        'classroom': True
+    }
+    return render(request, 'profile_classroom.html', context)
 
 
 def about(request):
@@ -53,6 +60,12 @@ def dispBoard(request, pk):
         return redirect('login')
 
     if (not request.user == b.admin_user_b) and (not request.user in b.guests_b.all()):
+        if b.belonging is not None:
+            print("CHECKING STUDENTS!\n")
+            student_list = ClassRoom.objects.get(pk=b.belonging_id).students
+            if request.user in student_list.all():
+                return render(request, 'board/board_detail.html', context={'object': b})
+
         messages.error(request, "You don't have permissions to acces this board, please contact with the owner.")
         return redirect('disp_profile')
 
@@ -68,6 +81,33 @@ class BoardDetailView(LoginRequiredMixin, DetailView, UserPassesTestMixin):
         if self.request.user == board.admin_user_b:
             return True
         return False
+
+
+@login_required
+def createBoardForClassroom(request, pk):
+    if request.method == "POST":
+        if 'board_title' in request.POST:
+            classroom = ClassRoom.objects.get(pk=pk)
+            print(request.POST['board_title'])
+            new_board = Board(title=request.POST['board_title'], admin_user_b=classroom.author, belonging=classroom)
+            new_board.save()
+
+            messages.success(request, "Board created!")
+
+            return redirect('disp_classrooms')
+
+    messages.warning(request, "Something went wrong...")
+    return redirect('disp_classrooms')
+
+
+class ClassRoomCreateView(LoginRequiredMixin, CreateView):
+    model = ClassRoom
+    fields = ['title']
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
 
 # TODO jak to się dzieje że bartek nie musi tu dać templatki...
 class BoardCreateView(LoginRequiredMixin, CreateView):
@@ -165,6 +205,45 @@ def use_invite(request, g_code=""):
         return redirect('login')
 
 
+def use_invite_classroom(request, g_code=""):
+    if request.user.is_authenticated:
+        if g_code != "":
+            classroom = handle_invite_class(g_code)
+        elif request.method == "POST":
+            classroom = handle_invite_class(request.POST.get('bc', ""))
+        else:
+            classroom = -1
+
+        if classroom == -1:
+            messages.error(request, 'Invalid invitation code. Please try again.')
+        else:
+            b = ClassRoom.objects.get(pk=classroom)
+            if request.user in b.students.all():
+                messages.warning(request, 'You\'ve already joined the class!')
+            elif request.user == b.author:
+                messages.warning(request, 'You are the owner of this class!')
+            else:
+                b.students.add(request.user)
+                messages.success(request, "You've been successfully added to the class.")
+
+        return redirect('disp_classrooms')
+    else:
+        return redirect('login')
+
+
+def classroom_settings(request, pk):
+    try:
+        classroom = ClassRoom.objects.get(pk=pk)
+        context = {
+            'class': classroom,
+            'classroom': True,
+        }
+        return render(request, 'board/classroom_settings.html', context)
+    except:
+        messages.error(request, "Please provide valid classroom.")
+        return redirect('disp_classrooms')
+
+
 def gen_invite(request, pk):
     if request.method == "POST":
         number = request.POST.get("number", 999)
@@ -180,6 +259,25 @@ def gen_invite(request, pk):
     response = invite_code.code + "_" + str(pk)
 
     return HttpResponse(response)
+
+
+def gen_classroom_invite(request, pk):
+    print("ESSA")
+    if request.method == "POST":
+        number = request.POST.get("number", 999)
+    else:
+        number = 999
+
+    invite_code = ClassRoom.objects.get(pk=pk).create_link
+    invite_code.usage = number
+    invite_code.save()
+
+    print(invite_code.usage)
+
+    response = invite_code.code + "_" + str(pk)
+
+    return HttpResponse(response)
+
 
 def del_invite(request, pk):
     b = Board.objects.get(pk=pk)
@@ -212,4 +310,26 @@ def kick_user(request, b_pk):
 
     return redirect('disp_profile')
 
+
+def kick_user_from_class(request, c_pk):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == "POST":
+        c = ClassRoom.objects.get(pk=c_pk)
+        u_pk = int(request.POST.get('user_id', ""))
+
+        print(u_pk)
+
+        user = User.objects.get(pk=u_pk)
+
+        if request.user == c.author and user != c.author:
+            c.students.remove(user)
+            messages.success(request, "User was kicked succesfully!")
+
+            return redirect('class_settings', c_pk)
+
+    messages.error(request, "Something went wrong...")
+
+    return redirect('disp_classrooms')
 
