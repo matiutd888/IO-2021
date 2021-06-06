@@ -4,6 +4,10 @@
      <div class="content-section">
      <h1>{{ board.title }} - Settings: </h1>
          <a href="{% url 'del_invites' board.pk %}">Deactivate all invitation links.</a>
+        <script>
+            console.log('{{ board.pk }}')
+            console.log('{{ board.board_string }}')
+        </script>
          <h2>Kick user out of the board.</h2>
         <form method="POST" action="{% url 'kick_user' board.pk %}">
             {% csrf_token %}

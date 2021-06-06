@@ -35,7 +35,6 @@ def disp_board_settings(request, pk):
         messages.error("You don't have permissions to edit this board settings!", request)
 
         return disp_profiles(request)
-
     return render(request, 'board/board_settings.html', context={'board': b})
 
 

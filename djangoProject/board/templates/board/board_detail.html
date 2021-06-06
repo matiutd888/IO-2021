@@ -76,7 +76,7 @@
 
                     <div class="dropdown-menu" aria-labelledby="exportMenuButton">
                         <a class="dropdown-item" onclick="exportToPng(canvas)">To PNG</a>
-                        <a class="dropdown-item" onclick="exportToJSON(canvas)">Too JSON txt file</a>
+                        <a class="dropdown-item" onclick="exportToJSON(canvas)">To JSON txt file</a>
                     </div>
 
                     <input type="text" id="latexSource">
@@ -170,7 +170,7 @@
 
 
         function exportToJSON(_canvas) {
-            var json = JSON.stringify(_canvas.toJSON());
+            var json = JSON.stringify(_canvas.toJSON(propertiesToInclude));
             console.log(json);
             downloadString(json, 'txt', '{{ object.title }}')
         }
@@ -209,18 +209,18 @@
         window.onload = loadCanvas();
         var generate = true;
 
-        function saveCanvas() {
-            console.log("SAVE_CANVAS_RUN");
-            var json = JSON.stringify(canvas.toJSON());
-            console.log(json);
-            $.post('{% url 'save_canvas' %}', {
-                canvas_: json,
-                board_id: {{ object.pk }},
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            }, function (data) {
-                console.log(data)
-            });
-        }
+        {#function saveCanvas() {#}
+        {#    console.log("SAVE_CANVAS_RUN");#}
+        {#    var json = JSON.stringify(canvas.toJSON());#}
+        {#    console.log(json);#}
+        {#    $.post('{% url 'save_canvas' %}', {#}
+        {#        canvas_: json,#}
+        {#        board_id: {{ object.pk }},#}
+        {#        csrfmiddlewaretoken: '{{ csrf_token }}'#}
+        {#    }, function (data) {#}
+        {#        console.log(data)#}
+        {#    });#}
+        {#}#}
 
         function loadCanvas() {
             if (data !== '') {
