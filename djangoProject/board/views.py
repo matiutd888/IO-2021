@@ -86,11 +86,11 @@ class ImportBoardForm(forms.Form):
     def read_from_file_and_insert(self, user):
         print("READING FROM FILE!")
         file = self.cleaned_data.get('importedBoardFile')
-        file.open(mode='rb')
+        file.open(mode='r')
         lines = file.read()
         print("LINES\n" + str(lines))
         file.close()
-        Board.objects.create(board_string=lines, admin_user_b=user, title=self.cleaned_data.get('title'))
+        Board.objects.create(board_string=lines.decode('utf-8'), admin_user_b=user, title=self.cleaned_data.get('title'))
         return
 
     class Meta:

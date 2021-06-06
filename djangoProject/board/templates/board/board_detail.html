@@ -69,9 +69,16 @@
             </div>
             <div class="d-flex float-left justify-content-sm-between">
                 <div class="dropdown float-left">
-                    <button class="btn btn-outline-primary" id="export-btn" aria-pressed="true"
-                            onclick="exportToPng(canvas)">Export To PNG
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="exportMenuButton"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Export canvas
                     </button>
+
+                    <div class="dropdown-menu" aria-labelledby="exportMenuButton">
+                        <a class="dropdown-item" onclick="exportToPng(canvas)">To PNG</a>
+                        <a class="dropdown-item" onclick="exportToJSON(canvas)">Too JSON txt file</a>
+                    </div>
+
                     <input type="text" id="latexSource">
                     <button class="btn btn-outline-primary" id="latex-btn" aria-pressed="true"
                             onclick="loadLatex(document.getElementById('latexSource').value)">Load Latex
@@ -160,6 +167,29 @@
     <script src="{% static 'canvas_js/jscolor.js' %}"></script>
     <script src="{% static 'canvas_js/canvas.js' %}"></script>
     <script>
+
+
+        function exportToJSON(_canvas) {
+            var json = JSON.stringify(_canvas.toJSON());
+            console.log(json);
+            downloadString(json, 'txt', 'canvasAsJSON')
+        }
+
+        function downloadString(text, fileType, fileName) {
+            var blob = new Blob([text], {type: fileType});
+            var a = document.createElement('a');
+            a.download = fileName;
+            a.href = URL.createObjectURL(blob);
+            a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () {
+                URL.revokeObjectURL(a.href);
+            }, 1500);
+        }
+
         function exportToPng(_canvas) {
             console.log("Export to png clicked!")
 
