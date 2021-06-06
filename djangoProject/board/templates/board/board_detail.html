@@ -51,54 +51,82 @@
     </div>
     <div class="d-flex p-2 justify-content-between">
         <div class="float-left">
+            <!--Guziki z narzędziami-->
             <div id="mode-buttons">
-                <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)"><i class="bi bi-cursor" style="font-size: 1.25rem;"></i></button>
-                <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)"><i class="material-icons">pan_tool</i><i class="material-icons">open_with</i></button>
-                <button class="btn btn-outline-primary" id="drawing"  aria-pressed="true" onclick="toggleMode(modes.drawing)"><i class="material-icons">mode_edit</i></button>
-                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)"><i class="fas fa-eraser" style="font-size: 1.7rem;"></i></button>
-            </div>
+                <abbr title="Move object">
+                    <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)">
+                            <i class="bi bi-cursor" style="font-size: 1.25rem;"></i>
+                    </button>
+                </abbr>
 
-            <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)"><i class="material-icons">delete</i></button>
-            <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)"><i class="material-icons">restore</i></button>
+                <abbr title="Pan tool">
+                    <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)">
+                        <i class="material-icons">pan_tool</i>
+                    </button>
+                </abbr>
+
+                <span>
+                    <abbr title="Draw">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="toggleMode(modes.drawing)">
+                            <i class="material-icons">mode_edit</i>
+                        </button>
+
+
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <input type="range" class="form-control-range w-100" id='brushSize' min="1" max="20" value="1" white-space="nowrap">
+                            <input id='colorPicker' value="#000000" data-jscolor="">
+                        </div>
+                    </abbr>
+                </span>
+
+                <abbr title="Erase">
+                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)"><i class="fas fa-eraser" style="font-size: 1.7rem;"></i></button>
+
+                <abbr title="Rectangle">
+                    <button class="btn btn-outline-success" id="Rectangle" aria-pressed="true" onclick="changeRectMode()"><i class="material-icons">crop_5_4</i></button>
+                </abbr>
+
+                <abbr title="Circle">
+                    <button class="btn btn-outline-success" id="Circle"  aria-pressed="true" onclick="changeCircMode()"><i class="material-icons">radio_button_unchecked</i></button>
+                </abbr>
+
+                <abbr title="Text box">
+                    <button class="btn btn-outline-success" id="Text" aria-pressed="true" onclick="changeTextMode()">
+                            <i class="material-icons">text_fields</i>
+                    </button>
+                </abbr>
+
+                <abbr title="KaTex">
+                    <button class="btn btn-outline-success" id="Katex"  aria-pressed="true" onclick="changeKatexMode()"><i class="material-icons">functions</i></button>
+                </abbr>
+
+                <abbr title="Undo">
+                    <button class="btn btn-outline-info" onclick="undo()"><i class="material-icons">undo</i></button>
+                </abbr>
+
+                <abbr title="Redo">
+                    <button class="btn btn-outline-info" onclick="redo()"><i class="material-icons">redo</i></button>
+                </abbr>
+
+                <abbr title="Clear">
+                    <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)"><i class="material-icons">delete</i></button>
+                </abbr>
+
+                <abbr title="Restore">
+                    <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)"><i class="material-icons">restore</i></button>
+                </abbr>
+
+            </div>
         </div>
         <div class = "d-flex float-left justify-content-sm-between">
 		<div id="export-button">
 			<!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
 		</div>
-            <div class="dropdown float-left">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Additional
+            <abbr title="Move object">
+                <button class="btn btn-outline-primary" id="image" aria-pressed="true" onclick="toggleMode(modes.move)">
+                    <i class="material-icons">image</i>
                 </button>
-
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-		    <a class="dropdown-item" onclick="changeTextMode()">Textbox</a>
-                    <a class="dropdown-item" onclick="changeRectMode()">Rectangle</a>
-                    <a class="dropdown-item" onclick="changeCircMode()">Circle</a>
-		    <a class="dropdown-item" onclick="changeKatexMode()">KaTeX</a>
-<!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, true)">Group</a>-->
-<!--                    <a class="dropdown-item" onclick="groupObjects(canvas, group, false)">Ungroup</a>-->
-                </div>
-            </div>
-            <div class="dropdown float-left ml-1">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Change color
-                </button>
-
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <input id='colorPicker' value="#000000" data-jscolor="">
-                </div>
-            </div>
-
-            <div class="dropdown float-left ml-1">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Change brush size
-                </button>
-
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <input type="range" class="form-control-range w-100" id='brushSize' min="1" max="20" value="1">
-                </div>
-            </div>
-
+            </abbr>
             <input class="float-left ml-1" id="myImg" type="file" accept="image/*">
         </div>
     </div>

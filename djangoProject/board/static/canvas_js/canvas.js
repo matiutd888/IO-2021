@@ -43,6 +43,7 @@ document.body.onmouseup = function () {
     --mouseDown;
 }
 
+// Funkcje wywoływane przy załadowaniu canvasa
 const initCanvas = (id) => {
     var sizes = document.getElementById('canvas-content');
 
@@ -81,7 +82,7 @@ const setBackground = (url, canvas) => {
     })
 }
 
-
+// Blokowanie obiektów w czasie przesuwania całego canvasa (move pan)
 const lockObject = (object, option) => {
     object.lockMovementX = object.lockMovementY = option;
     object.hasBorders = object.hasControls = !option;
@@ -102,6 +103,8 @@ const lockAllObjects = (option) => {
     }
 }
 
+// Wywoływane funkcje które kończą każdy z trybów
+// wywoływane przez toggleMode
 const endDrawingMode = (mode) => {
     if (mode === modes.drawing) {
         return
@@ -139,6 +142,8 @@ const endErasingMode = (mode) => {
         canvas.off('mouse:over', eraseHandler)
     }
 }
+
+// Ustawia podświetlanie ostatnio klikniętego guzika
 const highlightButton = (mode) => {
     $('#mode-buttons').children().each(function () {
         var innerDivId = $(this).attr('id');
@@ -156,6 +161,8 @@ const highlightButton = (mode) => {
     });
 }
 
+// Ustawia nowy tryb,
+// wywoływane przez używtkownika w board_detail.html
 const toggleMode = (mode) => {
     endDrawingMode(mode)
     endMovindMode(mode)
@@ -184,6 +191,11 @@ class KatexTextbox extends fabric.Textbox {
 
 }
 
+/*canvas.selectionColor = 'rgba(0,255,0,0.3)';
+canvas.selectionBorderColor = 'red';
+canvas.selectionLineWidth = 5;*/
+
+// Obsługa myszki
 const setPanEvents = (canvas) => {
     canvas.on('mouse:move', (event) => {
         // console.log(event)
@@ -200,7 +212,28 @@ const setPanEvents = (canvas) => {
     canvas.on('mouse:down', (event) => {
         console.log("Mouse down!")
         mousePressed = true;
-        if (currentMode === modes.pan) {
+
+        /*if (currentMode === modes.move) {
+            console.log("Move!");
+
+            canvas.discardActiveObject();
+            var sel = new fabric.ActiveSelection(canvas.getObjects(), {
+              canvas: canvas,
+            });
+            canvas.setActiveObject(sel);
+            canvas.requestRenderAll();
+            /!*if (!canvas.getActiveObject()) {
+                console.log("Pierwszy if")
+                return;
+            }
+            if (canvas.getActiveObject().type !== 'activeSelection') {
+                console.log("Drugi if")
+                return;
+            }
+            console.log("Żodyn if")
+            canvas.getActiveObject().toGroup();
+            canvas.requestRenderAll();*!/
+        } else*/ if (currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
         } else if (currentMode === modes.erase) {
@@ -228,6 +261,21 @@ const setPanEvents = (canvas) => {
         mousePressed = false
         canvas.setCursor('default')
         canvas.renderAll()
+
+        console.log("Move!")
+        if (currentMode === modes.move) {
+            if (!canvas.getActiveObject()) {
+                console.log("Pierwszy if")
+                return;
+            }
+            if (canvas.getActiveObject().type !== 'activeSelection') {
+                console.log("Drugi if")
+                return;
+            }
+            console.log("Żodyn if")
+            canvas.getActiveObject().toGroup();
+            canvas.requestRenderAll();
+        }
     })
     // zoom in and out of canvas
     canvas.on('mouse:wheel', (event) => {
@@ -281,7 +329,7 @@ const restoreCanvas = (canvas, state, bgUrl) => {
     }
 }
 
-
+// Funkcje wywoływane, kiedy user wybierze, że chce coś dodać na canvasie
 const changeRectMode = () => {
     currentMode = modes.rectangle
 }
@@ -298,6 +346,7 @@ const changeKatexMode = () => {
     currentMode = modes.katex
 }
 
+// Fukncje wywoływane, kiedy user kliknie gdzieś na canvasie, kiedy chce coś dodać
 const createRect = (canvas, left = pointer.x, top = pointer.y) => {
     console.log("rect")
 
@@ -747,3 +796,49 @@ boardSocket.onmessage = function (e) {
     console.log("on message " + type + " " + data_json)
     Board_OnSync(canvas, data_json)
 }
+
+// Zaznaczanie grupy obiektów
+
+var group_objects = $('group_objects'),
+      ungroup = $('ungroup'),
+      multiselect = $('multiselect'),
+      addmore = $('addmore'),
+      discard = $('discard');
+
+
+      multiselect.onclick = function() {
+        canvas.discardActiveObject();
+        var sel = new fabric.ActiveSelection(canvas.getObjects(), {
+          canvas: canvas,
+        });
+        canvas.setActiveObject(sel);
+        canvas.requestRenderAll();
+      }
+
+      group_objects.onclick = function() {
+        if (!canvas.getActiveObject()) {
+          return;
+        }
+        if (canvas.getActiveObject().type !== 'activeSelection') {
+          return;
+        }
+        canvas.getActiveObject().toGroup();
+        canvas.requestRenderAll();
+      }
+
+      ungroup.onclick = function() {
+        if (!canvas.getActiveObject()) {
+          return;
+        }
+        if (canvas.getActiveObject().type !== 'group') {
+          return;
+        }
+        canvas.getActiveObject().toActiveSelection();
+        canvas.requestRenderAll();
+      }
+
+      discard.onclick = function() {
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+      }
+
