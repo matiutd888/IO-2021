@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.views.generic import CreateView, DetailView, ListView, DeleteView
+from django.views.generic import CreateView, DetailView, ListView, DeleteView, FormView
 from .models import Board, User
 from .invite import handle_invite
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -70,15 +70,42 @@ class BoardDetailView(LoginRequiredMixin, DetailView, UserPassesTestMixin):
             return True
         return False
 
-
+# TODO jak to się dzieje że bartek nie musi tu dać templatki...
 class BoardCreateView(LoginRequiredMixin, CreateView):
     model = Board
     fields = ['title']
-
     def form_valid(self, form):
         form.instance.admin_user_b = self.request.user
         return super().form_valid(form)
 
+# TODO redirect URL
+# https://stackoverflow.com/questions/13412924/how-to-get-txt-file-content-from-filefield
+class ImportBoardForm(forms.Form):
+    title = forms.CharField(min_length=1, max_length=100)
+    importedBoardFile = forms.FileField()
+    def read_from_file_and_insert(self, user):
+        print("READING FROM FILE!")
+        file = self.cleaned_data.get('importedBoardFile')
+        file.open(mode='rb')
+        lines = file.read()
+        print("LINES\n" + str(lines))
+        file.close()
+        Board.objects.create(board_string=lines, admin_user_b=user, title=self.cleaned_data.get('title'))
+        return
+
+    class Meta:
+        fields = {'title', 'importedBoardFile'}
+
+class ImportBoardFormView(LoginRequiredMixin, FormView):
+    form_class = ImportBoardForm
+    template_name = "import_board_template.html"
+    success_url = '/profile/'
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        # form.instance.admin_user_b = self.request.user
+        form.read_from_file_and_insert(self.request.user)
+        return super(ImportBoardFormView, self).form_valid(form)
 
 class BoardDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Board
