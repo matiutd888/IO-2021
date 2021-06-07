@@ -53,81 +53,101 @@
         <div class="float-left">
             <!--Guziki z narzędziami-->
             <div id="mode-buttons">
-                <abbr title="Move object">
-                    <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)">
+                <button class="btn btn-outline-primary" id="move" aria-pressed="true" onclick="toggleMode(modes.move)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Move object">
                             <i class="bi bi-cursor" style="font-size: 1.25rem;"></i>
-                    </button>
-                </abbr>
+                    </span>
+                </button>
+                <!--</abbr>-->
 
-                <abbr title="Pan tool">
-                    <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)">
+                <button class="btn btn-outline-primary" id="pan" aria-pressed="true" onclick="toggleMode(modes.pan)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Move pan">
                         <i class="material-icons">pan_tool</i>
-                    </button>
-                </abbr>
+                    </span>
+                </button>
 
-                <span>
-                    <abbr title="Draw">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="toggleMode(modes.drawing)">
-                            <i class="material-icons">mode_edit</i>
-                        </button>
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="toggleMode(modes.drawing)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Draw">
+                        <i class="material-icons">mode_edit</i>
+                    </span>
+                </button>
 
 
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <input type="range" class="form-control-range w-100" id='brushSize' min="1" max="20" value="1" white-space="nowrap">
-                            <input id='colorPicker' value="#000000" data-jscolor="">
-                        </div>
-                    </abbr>
-                </span>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Change brush size">
+                        <input type="range" class="form-control-range w-100" id='brushSize' min="1" max="20" value="1" white-space="nowrap">
+                    </span>
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Change color">
+                        <input id='colorPicker' value="#000000" data-jscolor="">
+                    </span>
+                </div>
 
-                <abbr title="Erase">
-                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)"><i class="fas fa-eraser" style="font-size: 1.7rem;"></i></button>
+                <button class="btn btn-outline-primary" id="erase"  aria-pressed="true" onclick="toggleMode(modes.erase)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Erase">
+                        <i class="fas fa-eraser" style="font-size: 1.7rem;"></i>
+                    </span>
+                </button>
 
-                <abbr title="Rectangle">
-                    <button class="btn btn-outline-success" id="Rectangle" aria-pressed="true" onclick="changeRectMode()"><i class="material-icons">crop_5_4</i></button>
-                </abbr>
+                <button class="btn btn-outline-success" id="Rectangle" aria-pressed="true" onclick="changeRectMode()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Create rectangle">
+                        <i class="material-icons">crop_5_4</i>
+                    </span>
+                </button>
 
-                <abbr title="Circle">
-                    <button class="btn btn-outline-success" id="Circle"  aria-pressed="true" onclick="changeCircMode()"><i class="material-icons">radio_button_unchecked</i></button>
-                </abbr>
+                <button class="btn btn-outline-success" id="Circle"  aria-pressed="true" onclick="changeCircMode()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Create circle">
+                        <i class="material-icons">radio_button_unchecked</i>
+                    </span>
+                </button>
 
-                <abbr title="Text box">
-                    <button class="btn btn-outline-success" id="Text" aria-pressed="true" onclick="changeTextMode()">
-                            <i class="material-icons">text_fields</i>
-                    </button>
-                </abbr>
+                <button class="btn btn-outline-success" id="Text" aria-pressed="true" onclick="changeTextMode()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Text box">
+                        <i class="material-icons">text_fields</i>
+                    </span>
+                </button>
 
-                <abbr title="KaTex">
-                    <button class="btn btn-outline-success" id="Katex"  aria-pressed="true" onclick="changeKatexMode()"><i class="material-icons">functions</i></button>
-                </abbr>
+                <button class="btn btn-outline-success" id="Katex"  aria-pressed="true" onclick="changeKatexMode()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="KaTex">
+                        <i class="material-icons">functions</i>
+                    </span>
+                </button>
 
-                <abbr title="Undo">
-                    <button class="btn btn-outline-info" onclick="undo()"><i class="material-icons">undo</i></button>
-                </abbr>
+                <button class="btn btn-outline-info" onclick="undo()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Undo">
+                        <i class="material-icons">undo</i>
+                    </span>
+                </button>
 
-                <abbr title="Redo">
-                    <button class="btn btn-outline-info" onclick="redo()"><i class="material-icons">redo</i></button>
-                </abbr>
+                <button class="btn btn-outline-info" onclick="redo()">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Redo">
+                        <i class="material-icons">redo</i>
+                    </span>
+                </button>
 
-                <abbr title="Clear">
-                    <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)"><i class="material-icons">delete</i></button>
-                </abbr>
+                <button class="btn btn-outline-info" onclick="clearCanvas(canvas, JSONState)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Clear board">
+                        <i class="material-icons">delete</i>
+                    </span>
+                </button>
 
-                <abbr title="Restore">
-                    <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)"><i class="material-icons">restore</i></button>
-                </abbr>
+                <button class="btn btn-outline-info" onclick="restoreCanvas(canvas, JSONState, bgUrl)">
+                    <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Restore board (after clear)">
+                        <i class="material-icons">restore</i>
+                    </span>
+                </button>
 
             </div>
         </div>
         <div class = "d-flex float-left justify-content-sm-between">
-		<div id="export-button">
-			<!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
-		</div>
-            <abbr title="Move object">
-                <button class="btn btn-outline-primary" id="image" aria-pressed="true" onclick="toggleMode(modes.move)">
+            <div id="export-button">
+                <!--<button class="btn btn-outline-primary" id="export" aria-pressed="true" onclick="exportToPNG()">Export to PNG</button>-->
+            </div>
+            <input type="file" name="" id='myImg' accept="image/*" hidden>
+            <button class="btn btn-outline-info" onclick="open_file()">
+                <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="Upload image">
                     <i class="material-icons">image</i>
-                </button>
-            </abbr>
-            <input class="float-left ml-1" id="myImg" type="file" accept="image/*">
+                </span>
+            </button>
         </div>
     </div>
     <div class="canvas-content" id="canvas-content">
@@ -275,5 +295,9 @@
 	                canvas.renderAll();
 	            }
 	        }
+
+            function open_file() {
+                document.getElementById('myImg').click();
+            }
     </script>
 {% endblock content %}
