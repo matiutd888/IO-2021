@@ -198,7 +198,13 @@
 
     </div>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.js" integrity="sha384-zDIgORxjImEWftZXZpWLs2l57fMX9B3yWFPN5Ecabe211Hm5ZG/OIz2b07DYPUcH" crossorigin="anonymous"></script>
+    <!-- It is important to use the SVG configuration of MathJax! -->
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.9/dist/katex.min.js"
+            integrity="sha384-zDIgORxjImEWftZXZpWLs2l57fMX9B3yWFPN5Ecabe211Hm5ZG/OIz2b07DYPUcH"
+            crossorigin="anonymous"></script>
     <script src="FileSaver.min.js"></script>
     <script src="canvas-toBlob.js"></script>
     <script src="{% static 'canvas_js/fabric.min.js' %}"></script>

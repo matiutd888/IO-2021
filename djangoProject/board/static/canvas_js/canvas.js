@@ -214,27 +214,7 @@ const setPanEvents = (canvas) => {
         console.log("Mouse down!")
         mousePressed = true;
 
-        /*if (currentMode === modes.move) {
-            console.log("Move!");
-
-            canvas.discardActiveObject();
-            var sel = new fabric.ActiveSelection(canvas.getObjects(), {
-              canvas: canvas,
-            });
-            canvas.setActiveObject(sel);
-            canvas.requestRenderAll();
-            /!*if (!canvas.getActiveObject()) {
-                console.log("Pierwszy if")
-                return;
-            }
-            if (canvas.getActiveObject().type !== 'activeSelection') {
-                console.log("Drugi if")
-                return;
-            }
-            console.log("Żodyn if")
-            canvas.getActiveObject().toGroup();
-            canvas.requestRenderAll();*!/
-        } else*/ if (currentMode === modes.pan) {
+        if (currentMode === modes.pan) {
             canvas.setCursor('grab')
             canvas.renderAll()
         } else if (currentMode === modes.erase) {
@@ -570,6 +550,9 @@ const loadLatex = (latexSource) => {
           fabric.Image.fromURL(svg, function(img) {
               img.height = height;
               img.width = width;
+              img.left = canvas.getVpCenter().x;
+              img.top = canvas.getVpCenter().y;
+              //canvas.centerObject(img);
               canvas.add(img);
           },
               {crossOrigin: "Anonymous"});
