@@ -205,14 +205,37 @@
     <script src="{% static 'canvas_js/jscolor.js' %}"></script>
     <script src="{% static 'canvas_js/canvas.js' %}"></script>
 	<script>
-		function exportToPNG() {
-			let cur_domain = document.domain;
-			document.domain = "students.mimuw.edu.pl";
-			document.getElementById("canvas").toBlob(function(blob) {
-				saveAs(blob, "my_canvas.png");
-			});
-			document.domain = cur_domain;
-		}
+        function exportToJSON(_canvas) {
+            var json = JSON.stringify(_canvas.toJSON(propertiesToInclude));
+            console.log(json);
+            downloadString(json, 'txt', '{{ object.title }}')
+        }
+
+        function downloadString(text, fileType, fileName) {
+            var blob = new Blob([text], {type: fileType});
+            var a = document.createElement('a');
+            a.download = fileName;
+            a.href = URL.createObjectURL(blob);
+            a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () {
+                URL.revokeObjectURL(a.href);
+            }, 1500);
+        }
+
+		function exportToPng(_canvas) {
+            console.log("Export to png clicked!")
+
+            let downloadLink = document.createElement('a');
+            downloadLink.setAttribute('download', '{{ object.title }}.png');
+            let dataURL = _canvas.toDataURL('image/png');
+            let url = dataURL.replace(/^data:image\/png/, 'data:application/octet-stream');
+            downloadLink.setAttribute('href', url);
+            downloadLink.click();
+        }
 	</script>
     <script>
     {% if request.user == object.admin_user_b %}
@@ -222,12 +245,18 @@
     window.onload = loadCanvas();
     var generate = true;
 
-    function saveCanvas() {
-        console.log("SAVE_CANVAS_RUN");
-        var json = JSON.stringify(canvas.toJSON());
-        console.log(json);
-        $.post('{% url 'save_canvas' %}', {canvas_ : json, board_id : {{ object.pk }}, csrfmiddlewaretoken: '{{ csrf_token }}'}, function (data){console.log(data)});
-    }
+    {#function saveCanvas() {#}
+        {#    console.log("SAVE_CANVAS_RUN");#}
+        {#    var json = JSON.stringify(canvas.toJSON());#}
+        {#    console.log(json);#}
+        {#    $.post('{% url 'save_canvas' %}', {#}
+        {#        canvas_: json,#}
+        {#        board_id: {{ object.pk }},#}
+        {#        csrfmiddlewaretoken: '{{ csrf_token }}'#}
+        {#    }, function (data) {#}
+        {#        console.log(data)#}
+        {#    });#}
+        {#}#}
 
     function loadCanvas() {
         if (data !== '') {
@@ -291,8 +320,7 @@
 
         if (!link) {
             alert("Code copied!");
-        }
-        else {
+        } else {
             alert("Link copied!");
         }
     }
