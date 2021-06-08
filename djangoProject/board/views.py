@@ -296,6 +296,10 @@ def kick_user(request, b_pk):
         b = Board.objects.get(pk=b_pk)
         u_pk = int(request.POST.get('user_id', ""))
 
+        if u_pk == -1:
+            messages.warning(request, "Please pick valid user first.")
+            return redirect('board_settings', b_pk)
+
         print(u_pk)
 
         user = User.objects.get(pk=u_pk)
@@ -318,6 +322,10 @@ def kick_user_from_class(request, c_pk):
     if request.method == "POST":
         c = ClassRoom.objects.get(pk=c_pk)
         u_pk = int(request.POST.get('user_id', ""))
+
+        if u_pk == -1:
+            messages.warning(request, "Please pick valid user first.")
+            return redirect('class_settings', c_pk)
 
         print(u_pk)
 

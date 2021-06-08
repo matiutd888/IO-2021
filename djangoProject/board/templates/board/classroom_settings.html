@@ -51,6 +51,7 @@
                     <fieldset class="form-group">
                         <label for="user_id"> Pick username: </label>
                             <select id="user_id" name="user_id">
+                                <option selected value="-1">Pick user.</option>
                                 {% for value in class.students.all %}
                                     <option value="{{ value.pk }}">{{ value.username }}</option>
                                 {% endfor %}

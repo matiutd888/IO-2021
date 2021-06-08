@@ -83,22 +83,24 @@
         </div>
         <!---INVITED CLASSROOMS TAB--->
         <div class="tab-pane container fade" id="sharedBoards">
-            <div class="content-section flex-wrap border-0 faded" id="sharedBoards">
-                <label for="student-classes">Pick your class:</label>
-                <select class="form-select ml-1" id="student-classes" aria-label="Managed classrooms" onchange="showClass(this)">
-                    <option selected value="-1">Check options</option>
-                    <!---ITERATES OVER ALL BOARDS, THAT USER IS INVITED TO--->
-                    {% for classroom in request.user.students_classes.all %}
-                                <option value="{{ classroom.pk }}" class="list-group-item"> {{ classroom.title }}
-                                <small class="text-muted"> admin: {{ classroom.author }}</small>
-                                <small class="text-muted"> count: {{ classroom.belonging_boards.count }}</small>
-                                </option>
-
-                    {% endfor %}
-                </select>
+                <div class="border-bottom-1">
+                    <label for="student-classes">Pick your class:</label>
+                    <select class="form-select ml-1" id="student-classes" aria-label="Managed classrooms" onchange="showClass(this)">
+                        <option selected value="-1">Check options</option>
+                        <!---ITERATES OVER ALL BOARDS, THAT USER IS INVITED TO--->
+                        {% for classroom in request.user.students_classes.all %}
+                                    <option value="{{ classroom.pk }}" class="list-group-item"> {{ classroom.title }}
+                                    <small class="text-muted"> admin: {{ classroom.author }}</small>
+                                    <small class="text-muted"> count: {{ classroom.belonging_boards.count }}</small>
+                                    </option>
+                        {% endfor %}
+                    </select>
+                </div>
             {% for classroom in request.user.students_classes.all %}
-             <div class="tab-content d-flex flex-wrap" id="classroom-{{ classroom.pk }}" style="display: none;">
-                {% for board in classroom.belonging_boards.all %}
+             <div class="tab-content" id="classroom-{{ classroom.pk }}" style="display: none;">
+                <h1>{{ classroom.title }}</h1>
+                <div class="d-flex flex-wrap">
+                 {% for board in classroom.belonging_boards.all %}
                         <div class="card float-left m-2"  style="width: 18rem;">
                             <img class="card-img-top" src="{% static 'placeholder_board.jpg' %}" alt="Card image cap">
                             <!---SETTINGS BUTTON--->
@@ -111,11 +113,10 @@
                             </div>
                         </div>
                 {% endfor %}
+                </div>
              </div>
          {% endfor %}
             </div>
-        </div>
-
     </div>
     </div>
 
@@ -123,7 +124,7 @@
     let active_classroom = -1;
 
     function unshowClass() {
-        if (active_classroom !== -1) {
+        if (active_classroom != -1) {
             document.getElementById("classroom-" + active_classroom).style.display = "none";
             active_classroom = -1;
         }
@@ -132,13 +133,15 @@
     function showClass(select) {
         console.log("ACVITE - " + select.value);
 
-        if (active_classroom !== -1) {
+        if (active_classroom != -1) {
             document.getElementById("classroom-" + active_classroom).style.display = "none";
         }
 
         active_classroom = select.value;
 
-        document.getElementById("classroom-" + active_classroom).style.display = "block";
+        if (active_classroom != -1) {
+            document.getElementById("classroom-" + active_classroom).style.display = "block";
+        }
     }
     </script>
 
